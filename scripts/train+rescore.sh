@@ -27,7 +27,7 @@ nbest_full_path=`realpath $nbest`
 lm_basename=`basename $lm`
 nbest_basename=`basename $nbest`
 new_config="${config}.nbest_${nbest_basename}"
-result="results_rescoring/${lm_basename}_${nbest_basename}"
+result="../results_rescoring/${lm_basename}_${nbest_basename}"
 
 if [ -s $result ]; then
 	echo "Results for rescoring $nbest with $lm already exist. Skipping rescoring."
@@ -42,6 +42,8 @@ else
 		echo "nbest	$nbest_full_path" >> $new_config
 		echo "lm	$lm"  >> $new_config
 		echo "result	$result" >> $new_config
+		sed "s/\.log/_nbest\.log/" $new_config > ${new_config}.tmp
+		mv ${new_config}.tmp $new_config
 	fi
 	
 	echo "Calculate probabilities for hypotheses..."
