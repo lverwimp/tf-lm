@@ -27,8 +27,9 @@ Obligatory:
 * **optimizer**: type of optimizer (stochastic gradient descent (sgd) or adam)
 
 Optional:
+* **per_sentence**: by default, the network trains on batches that contain parts of sentences/multiple sentences; if this option is set, each sentence individually is processed (padded until the length of the longest sentence in the data)
 * **early_stop**: e.g. 2; if a value for early_stop is given, training will be stopped if the validation perplexity has not improved compared to the last 2 epochs
-* **nbest**: file with (n-best) hypotheses that should be rescored (the model should already be trained and be specified as 'lm')
+* **nbest**: file with (n-best) hypotheses that should be rescored (the model should already be trained and be specified as 'lm'); can only be used with sentence-level language models!
 * **lm**: trained model that can be used for n-best rescoring
 * **result**: file in which the results for n-best rescoring will be written
 
