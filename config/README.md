@@ -19,15 +19,17 @@ Obligatory:
 * **learning_rate**: learning rate of the model
 * **max_grad_norm**: clip the gradients if their norm exceeds max_grad_norm
 * **batch_size**: size of the mini-batch used in training
-* **max_epoch**: 
-* **max_max_epoch**
-* **dropout**:
-* **lr_decay**
-* **forget_bias**
-* **optimizer**
+* **max_epoch**: determines when the learning rate will start decaying
+* **max_max_epoch**: after max_max_epoch epochs, training will be stopped (in case of early stopping, it might be stopped earlier)
+* **dropout**: probability at which neurons are dropped (e.g. 0.75: 75% of neurons are dropped)
+* **lr_decay**: factor that determines the learning rate decay (the smaller lr_decay, the faster the decay)
+* **forget_bias**: initial bias of the forget gate in the LSTM cell
+* **optimizer**: type of optimizer (stochastic gradient descent (sgd) or adam)
 
 Optional:
-* **early_stop**
-* **nbest**
+* **early_stop**: e.g. 2; if a value for early_stop is given, training will be stopped if the validation perplexity has not improved compared to the last 2 epochs
+* **nbest**: file with (n-best) hypotheses that should be rescored (the model should already be trained and be specified as 'lm')
+* **lm**: trained model that can be used for n-best rescoring
+* **result**: file in which the results for n-best rescoring will be written
 
 
