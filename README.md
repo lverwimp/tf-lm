@@ -19,7 +19,7 @@ Main scripts:
 Other scripts:
 
 * configuration.py: handles configuration files
-* reader.py: reads the text data and generates mini-batches for training/testing\
+* reader.py: reads the text data and generates mini-batches for training/testing
 * writer.py: for writing to multiple output streams
 
 # Example commands
