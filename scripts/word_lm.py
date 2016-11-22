@@ -1,4 +1,4 @@
-# based on ptb tutorial (27/10/16)
+# based on ptb tutorial (downloaded 27/10/16)
 
 from __future__ import absolute_import
 from __future__ import division
@@ -220,7 +220,10 @@ def main(_):
 	else:
 		config = configuration.get_config(FLAGS.config)
 
-	fout = file(os.path.join('logs', os.path.basename(config['name'])) + '.log','w')
+	if os.path.isfile('{0}.final'.format(config['name'])):
+		raise StandardError("{0}.final already exists. If you want to re-train the model, remove the model file and its checkpoints.".format(config['name']))
+
+	fout = file(config['log'],'w')
 	sys.stdout = writer(sys.stdout, fout)
 
 	print('configuration:')
