@@ -243,7 +243,7 @@ def main(_):
 	else:
 		config = configuration.get_config(FLAGS.config)
 
-	fout = file(os.path.join('logs', os.path.basename(config['name'])) + '.log','w')
+	fout = file(config['log'],'w')
 	sys.stdout = writer(sys.stdout, fout)
 
 	print('configuration:')
@@ -264,6 +264,7 @@ def main(_):
 		# vocab is expanded with <bos> and padding symbol @
 		config['vocab_size'] = len(id_to_word)
 		eval_config['vocab_size'] = len(id_to_word)
+		debug('vocabulary size: {0}\n'.format(config['vocab_size']))
 
 	with tf.Graph().as_default():
 
