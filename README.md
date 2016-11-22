@@ -10,5 +10,28 @@ This repository contains scripts for recurrent neural network language modeling 
 
 # Overview
 
-* word_lm.py
-* word_lm_rescore_nbest.py
+Main scripts:
+
+* word_lm.py: train a language model
+* word_lm_rescore_nbest.py: use a trained language model for n-best rescoring
+* train+rescore.sh: combines the above 2 scripts: trains a language model and then uses the same model for rescoring
+
+Other scripts:
+
+* configuration.py: handles configuration files
+* reader.py: reads the text data and generates mini-batches for training/testing\
+* writer.py: for writing to multiple output streams
+
+# Example commands
+
+Train a language model:
+
+python word_lm.py --config ../config/ptb_word_small.config
+
+Rescore a list of hypotheses:
+
+python word_lm_rescore_nbest.py --config ../config/ptb_word_small.config.nbest_test
+
+Train + rescore:
+
+./train+rescore.sh ../config/ptb_word_small.config ../nbest/test
