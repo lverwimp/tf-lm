@@ -13,15 +13,6 @@ import reader
 import configuration 
 from writer import writer
 
-### Condor ###
-if 'LD_LIBRARY_PATH' not in os.environ:
-	os.environ['LD_LIBRARY_PATH'] = '/users/spraak/lverwimp/.local/lib/python2.7/site-packages/tensorflow:/users/spraak/lverwimp/.local/lib/python2.7/site-packages/cuda:/usr/local/cuda-7.5/lib64:/usr/local/cuda-8.0/lib64'
-	try:
-		os.system('/usr/bin/python ' + ' '.join(sys.argv))
-		sys.exit(0)
-	except Exception, exc:
-		sys.exit(1)
-
 flags = tf.flags
 logging = tf.logging
 
