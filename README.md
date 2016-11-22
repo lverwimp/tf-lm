@@ -37,3 +37,7 @@ python word_lm_rescore_nbest.py --config ../config/ptb_word_small_sentence.confi
 Train + rescore:
 
 ./train+rescore.sh ../config/ptb_word_small_sentence.config ../nbest/test
+
+# Contact
+
+If you have any questions, mail to lyan.verwimp@esat.kuleuven.be.
