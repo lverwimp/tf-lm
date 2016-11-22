@@ -3,6 +3,8 @@ Language modeling scripts based on TensorFlow.
 
 This repository contains scripts for recurrent neural network language modeling with TensorFlow (based on the [TensorFlow tutorial] (https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html)).
 
+For now, scripts for training a word-level LSTM language model and rescoring n-best hypotheses are included.
+
 # Installation
 
 * Install [TensorFlow] (https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup)
