@@ -26,14 +26,14 @@ Other scripts:
 
 # Example commands
 
-Train a language model:
+Train a small language model (training per sentence):
 
-python word_lm.py --config ../config/ptb_word_small.config
+python word_lm.py --config ../config/ptb_word_small_sentence.config
 
 Rescore a list of hypotheses:
 
-python word_lm_rescore_nbest.py --config ../config/ptb_word_small.config.nbest_test
+python word_lm_rescore_nbest.py --config ../config/ptb_word_small_sentence.config.nbest_test
 
 Train + rescore:
 
-./train+rescore.sh ../config/ptb_word_small.config ../nbest/test
+./train+rescore.sh ../config/ptb_word_small_sentence.config ../nbest/test
