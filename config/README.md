@@ -34,5 +34,6 @@ Optional:
 * **nbest**: file with (n-best) hypotheses that should be rescored (the model should already be trained and be specified as 'lm'); can only be used with sentence-level language models!
 * **lm**: trained model that can be used for n-best rescoring
 * **result**: file in which the results for n-best rescoring will be written
+* **char**: train on character level
 
 
