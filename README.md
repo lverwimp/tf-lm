@@ -13,7 +13,7 @@ For now, scripts for training a word- or character-level LSTM language model and
 * Word-level and character-level language models.
 * Early stopping based on comparison of previous *n* validation perplexities.
 * Optimizers: stochastic gradient descent and adam (with learning rate decay).
-* Train on mini-batches (that can contain multiple sentences/parts of sentences) or on sentence level (padded).
+* Train on mini-batches (that can contain multiple sentences/parts of sentences) or on padded sentences.
 * Other features from the [TensorFlow tutorial] (https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html).
 
 # Code overview
