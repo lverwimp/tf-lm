@@ -18,8 +18,7 @@ if [ -s $lm ]; then
 	echo "Language model $lm already exists. Skipping training."
 else
 	echo "Train language model: $lm"
-	python word_lm.py --config $config
-	#python word_lm_v2.py --config $config
+	python train_lm.py --config $config
 fi 
 
 ##### Rescore N-best list ######
@@ -47,7 +46,7 @@ else
 	fi
 	
 	echo "Calculate probabilities for hypotheses..."
-	python word_lm_rescore_nbest.py --config $new_config
+	python lm_rescore_nbest.py --config $new_config
 fi
 
 
