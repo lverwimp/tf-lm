@@ -13,7 +13,7 @@ Obligatory:
 * **vocab**: can be switched on if you want to train with a smaller vocabulary than in the original data (e.g. if you want to reduce the vocabulary of Penn Treebank to 5k instead of 10k, use '5' as value, replace all words in the data with the <UNK> symbol and rename the files like this: train.txt -> train_5k-unk.txt)
 * **layer**: type of cell (only LSTM implemented so far, but can be easily changed)
 * **num_layers**: number of hidden layers
-* **word_size**: size of the word embedding = size of the hidden layer
+* **word_size**: size of the word (or character) embedding = size of the hidden layer
 * **num_steps**: number of steps used for enrolling when training with backpropagation through time
 * **init_scale**: the weights of the model will be randomly initialized, with a uniform distribution and values between -init_scale and init_scale
 * **learning_rate**: learning rate of the model
