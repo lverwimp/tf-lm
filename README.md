@@ -8,7 +8,15 @@ For now, scripts for training a word- or character-level LSTM language model and
 * Install [TensorFlow] (https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup)
 * Modify the config files in config/: change the pathnames and optionally the parameters.
 
-# Overview
+# Options
+
+* Word-level and character-level language models.
+* Early stopping based on comparison of previous *n* validation perplexities.
+* Optimizers: stochastic gradient descent and adam (with learning rate decay).
+* Train on mini-batches (that can contain multiple sentences/parts of sentences) or on sentence level (padded).
+* Other features from the [TensorFlow tutorial] (https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html).
+
+# Code overview
 
 Main scripts:
 
