@@ -5,6 +5,7 @@ For now, scripts for training a word- or character-level LSTM language model and
 
 # Installation
 
+* Python version used: 2.7.5. 
 * Install [TensorFlow] (https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup)
 * Modify the config files in config/: change the pathnames and optionally the parameters.
 
