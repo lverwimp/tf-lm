@@ -175,7 +175,7 @@ def ptb_raw_data(config):
 
 		# return max_length+2 and not +3 because the last padding symbol is only there 
 		# to make sure that the target sequence does not end with the beginning of the next sequence
-	 	return padded_data, id_to_word, max_length+2
+		return padded_data, id_to_word, max_length+2
 	
 	else:
 		return all_data, id_to_word, 0
@@ -187,8 +187,8 @@ def ptb_producer(raw_data, config, name=None):
 		batch_size = config['batch_size']
 		num_steps = config['num_steps']
 
-		if 'per_sentence' in config:
-			raw_data = [word for sentence in raw_data for word in sentence] # flatten list of lists
+		#if 'per_sentence' in config:
+		#	raw_data = [word for sentence in raw_data for word in sentence] # flatten list of lists
 
 		data_len = len(raw_data)
 
