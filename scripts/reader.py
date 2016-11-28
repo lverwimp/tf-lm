@@ -127,7 +127,6 @@ def padding(dataset, total_length, word_to_id):
 		num_pads = total_length - len(sentence)
 		for pos in xrange(num_pads):
 			sentence.append(word_to_id['@'])
-		#debug('sentence: {0}\n'.format(sentence))
 	return dataset
 
 
@@ -197,8 +196,6 @@ def ptb_raw_data(config):
 		max_length = calc_longest_sent(all_data)
 		padded_data = pad_data(all_data, max_length, word_to_id)
 
-		#debug('padded_data: {0}\n'.format(padded_data))
-
 		# return max_length+2 and not +3 because the last padding symbol is only there 
 		# to make sure that the target sequence does not end with the beginning of the next sequence
 		return padded_data, id_to_word, max_length+2
@@ -213,8 +210,6 @@ def ptb_producer(raw_data, config, name=None):
 		batch_size = config['batch_size']
 		num_steps = config['num_steps']
 
-		#debug('raw_data: {0}\n'.format(raw_data))
-
 		#if 'per_sentence' in config:
 		#	raw_data = [word for sentence in raw_data for word in sentence] # flatten list of lists
 
@@ -222,8 +217,6 @@ def ptb_producer(raw_data, config, name=None):
 
 		# data should be divided in batch_size pieces of size batch_len
 		batch_len = data_len // batch_size
-
-		debug('batch_len (before per_sentence): {0}\n'.format(batch_len))
 
 		# if processing per sentence: we don't want to cut in the middle of a sentence, 
 		# so make sure that batch_len is a multiple of num_steps (= length of each padded sentence)
@@ -244,12 +237,6 @@ def ptb_producer(raw_data, config, name=None):
 			epoch_size = (batch_len - 1) // num_steps
 		else:
 			epoch_size = (batch_len - 1) // (num_steps+1)
-
-		#debug('data_len: {0}\n'.format(data_len))
-		#debug('batch_size: {0}\n'.format(batch_size))
-		#debug('batch_len: {0}\n'.format(batch_len))
-		#debug('epoch_size: {0}\n'.format(epoch_size))
-		#debug('num_steps: {0}\n'.format(num_steps))
 
 		epoch_size = tf.identity(epoch_size, name="epoch_size")
 
