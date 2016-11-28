@@ -22,7 +22,12 @@ def _read_words(filename):
 	with tf.gfile.GFile(filename, "r") as f:
 		return f.read().decode("utf-8").replace("\n", "<eos>").split()
 
-def _read_sentences(filename):
+def _read_chars(filename):
+	'''Returns a list of all characters in filename.'''
+	with tf.gfile.GFile(filename, "r") as f:
+		return ['<eos>' if x == '\n' else x for x in f.read().decode("utf-8")] # single list with all characters in the file
+
+def _read_sentences(filename, config):
 	'''Returns a list with all sentences in filename, each sentence split in words.'''
 	with tf.gfile.GFile(filename, "r") as f:
 		all_sentences = f.read().decode("utf-8").replace("\n", "<eos>").split("<eos>")
@@ -30,13 +35,26 @@ def _read_sentences(filename):
 		if all_sentences[-1] == '':
 			all_sentences = all_sentences[:-1]
 		for i in xrange(len(all_sentences)):
-			all_sentences[i] = all_sentences[i].split()
+			if 'char' in config:
+				#debug('all_sentences[i]: {0}\n'.format(all_sentences[i]))
+				all_sentences[i] = [x for x in all_sentences[i]]
+				if all_sentences[i][0] == ' ':
+					all_sentences[i] = all_sentences[i][1:]
+				#debug('all_sentences[i]: {0}\n'.format(all_sentences[i]))
+			else:
+				all_sentences[i] = all_sentences[i].split()
+
+		#debug('all_sentences: {0}\n'.format(all_sentences))
 		return all_sentences
 
 
 def _build_vocab(filename, config):
-	'''Returns a word-to-id and id-to-word mapping for all words in filename.'''
-	data = _read_words(filename)
+	'''Returns a word-to-id and id-to-word (or character-to-id and id-to-character) mapping 
+	for all words (or characters) in filename.'''
+	if 'char' in config:
+		data = _read_chars(filename)
+	else:
+		data = _read_words(filename)
 
 	counter = collections.Counter(data)
 
@@ -76,13 +94,16 @@ def _build_vocab(filename, config):
 def _file_to_word_ids(filename, word_to_id, config):
 	'''Returns list of all words in the file, either one long list or a list of lists per sentence.'''
 	if 'per_sentence' in config:
-		data = _read_sentences(filename)
+		data = _read_sentences(filename, config)
 		data_ids = []
 		for sentence in data: 
 			data_ids.append([word_to_id[word] for word in sentence if word in word_to_id])
 		return data_ids
 	else:
-		data = _read_words(filename)
+		if 'char' in config:
+			data = _read_chars(filename)
+		else:
+			data = _read_words(filename)
 		return [word_to_id[word] for word in data if word in word_to_id]
 
 def calc_longest_sent(all_data):
@@ -106,6 +127,7 @@ def padding(dataset, total_length, word_to_id):
 		num_pads = total_length - len(sentence)
 		for pos in xrange(num_pads):
 			sentence.append(word_to_id['@'])
+		#debug('sentence: {0}\n'.format(sentence))
 	return dataset
 
 
@@ -162,6 +184,8 @@ def ptb_raw_data(config):
 	# for n-best rescoring: read n-best hypotheses
 	# only for sentence-level language model
 	if 'nbest' in config:
+		if not 'per_sentence' in config:
+			raise ValueError("N-best rescoring can only be done with sentence-level language models.")
 		max_length = calc_longest_sent(all_data)
 		hypotheses = _file_to_word_ids(config['nbest'], word_to_id, config)
 		padded_hypotheses = pad_data(hypotheses, max_length, word_to_id)
@@ -172,6 +196,8 @@ def ptb_raw_data(config):
 	if 'per_sentence' in config:
 		max_length = calc_longest_sent(all_data)
 		padded_data = pad_data(all_data, max_length, word_to_id)
+
+		#debug('padded_data: {0}\n'.format(padded_data))
 
 		# return max_length+2 and not +3 because the last padding symbol is only there 
 		# to make sure that the target sequence does not end with the beginning of the next sequence
@@ -187,6 +213,8 @@ def ptb_producer(raw_data, config, name=None):
 		batch_size = config['batch_size']
 		num_steps = config['num_steps']
 
+		#debug('raw_data: {0}\n'.format(raw_data))
+
 		#if 'per_sentence' in config:
 		#	raw_data = [word for sentence in raw_data for word in sentence] # flatten list of lists
 
@@ -194,6 +222,8 @@ def ptb_producer(raw_data, config, name=None):
 
 		# data should be divided in batch_size pieces of size batch_len
 		batch_len = data_len // batch_size
+
+		debug('batch_len (before per_sentence): {0}\n'.format(batch_len))
 
 		# if processing per sentence: we don't want to cut in the middle of a sentence, 
 		# so make sure that batch_len is a multiple of num_steps (= length of each padded sentence)
@@ -215,6 +245,12 @@ def ptb_producer(raw_data, config, name=None):
 		else:
 			epoch_size = (batch_len - 1) // (num_steps+1)
 
+		#debug('data_len: {0}\n'.format(data_len))
+		#debug('batch_size: {0}\n'.format(batch_size))
+		#debug('batch_len: {0}\n'.format(batch_len))
+		#debug('epoch_size: {0}\n'.format(epoch_size))
+		#debug('num_steps: {0}\n'.format(num_steps))
+
 		epoch_size = tf.identity(epoch_size, name="epoch_size")
 
 		# tf.train.range_input_producer produces the integers from 0 to epoch_size - 1 in a queue
@@ -222,14 +258,17 @@ def ptb_producer(raw_data, config, name=None):
 		# this makes sure that every time a new sample of data is provided
 		i = tf.train.range_input_producer(epoch_size, shuffle=False).dequeue()
 
-		# inputs: extract slice of batch_size x num_steps; first batch begins at index 0, second at index num_steps(*1), third at index num_steps*2 etc.
+		if 'per_sentence' in config:
+			x = tf.slice(data, [0, i * (num_steps+1)], [batch_size, num_steps])
+			y = tf.slice(data, [0, i * (num_steps+1) + 1], [batch_size, num_steps])
+
 		# one row in the batch can contain only part of a sentence or multiple sentences!
-		#x = tf.slice(data, [0, i * (num_steps+1)], [batch_size, num_steps])
-		x = tf.slice(data, [0, i * num_steps], [batch_size, num_steps])
-		
-		# targets: same but shift everything 1 step to the right
-		#y = tf.slice(data, [0, i * (num_steps+1) + 1], [batch_size, num_steps])
-		y = tf.slice(data, [0, i * num_steps+1], [batch_size, num_steps])
+		else:
+			# inputs: extract slice of batch_size x num_steps; first batch begins at index 0, 
+			# second at index num_steps(*1), third at index num_steps*2 etc.
+			x = tf.slice(data, [0, i * num_steps], [batch_size, num_steps])
+			# targets: same but shift everything 1 step to the right
+			y = tf.slice(data, [0, i * num_steps+1], [batch_size, num_steps])
 
 		return x, y
 
