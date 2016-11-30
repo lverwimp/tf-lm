@@ -245,7 +245,8 @@ def ptb_producer(raw_data, config, name=None):
 		# this makes sure that every time a new sample of data is provided
 		i = tf.train.range_input_producer(epoch_size, shuffle=False).dequeue()
 
-		if 'per_sentence' in config:
+		# training sentence-level model
+		if 'per_sentence' in config and num_steps != 1:
 			x = tf.slice(data, [0, i * (num_steps+1)], [batch_size, num_steps])
 			y = tf.slice(data, [0, i * (num_steps+1) + 1], [batch_size, num_steps])
 
