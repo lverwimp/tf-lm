@@ -33,7 +33,7 @@ Other scripts:
 
 # Example commands
 
-For these examples, you can download the [Penn Treebank] (http://www.cis.upenn.edu/~treebank/home.html) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file.
+For these examples, you can download the [Penn Treebank] (https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file.
 
 Train a small language model on Penn Treebank (sentence-level):
 
