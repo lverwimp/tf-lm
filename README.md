@@ -52,7 +52,7 @@ Other scripts:
 
 For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
-Train and evualate a small language model on Penn Treebank (sentence-level):
+Train and evualate a small language model on Penn Treebank:
 
 python main.py --config ../config/ptb_word_small_dropout0.75.config
 
