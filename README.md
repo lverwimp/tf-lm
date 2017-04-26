@@ -54,7 +54,7 @@ For these examples, you can download the [Penn Treebank](https://catalog.ldc.upe
 
 Train and evualate a small language model on Penn Treebank (sentence-level):
 
-python main.py --config ../config/ptb_word_small_sentence.config
+python main.py --config ../config/ptb_word_small_dropout0.75.config
 
 # Contact
 
