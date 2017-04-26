@@ -1,14 +1,14 @@
 # tf-languagemodel
 **New version** of the scripts: different structure + now compatible with TensorFlow v1.1. If you want to continue using the old version, go to branch v0.
 
-This repository contains scripts for recurrent neural network language modeling with TensorFlow (based on the [TensorFlow tutorial] (https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html)).
+This repository contains scripts for recurrent neural network language modeling with TensorFlow (based on the [TensorFlow tutorial](https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html)).
 
 For now, scripts for training a word- or character-level LSTM language model and rescoring n-best hypotheses are included.
 
 # Installation
 
 * Python version used: 2.7.5. 
-* Install [TensorFlow] (https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.1.
+* Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.1.
 * Modify the config files in config/: change the pathnames and optionally the parameters.
 
 # Options
@@ -17,7 +17,7 @@ For now, scripts for training a word- or character-level LSTM language model and
 * Early stopping based on comparison of previous *n* validation perplexities.
 * Optimizers: stochastic gradient descent and adam (with learning rate decay).
 * Train on mini-batches (that can contain multiple sentences/parts of sentences) or on padded sentences.
-* Other features from the [TensorFlow tutorial] (https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html).
+* Other features from the [TensorFlow tutorial](https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html).
 
 # Code overview
 
@@ -43,7 +43,7 @@ Other scripts:
 
 # Example commands
 
-For these examples, you can download the [Penn Treebank] (https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
+For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
 Train and evaulate a small language model on Penn Treebank (sentence-level):
 
