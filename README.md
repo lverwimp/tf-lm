@@ -34,24 +34,20 @@ Main script:
 Other scripts:
 
 * configuration.py: handles configuration files
-* reader.py: reads the text data and generates mini-batches for training/testing
+* lm.py: class for language model
+* lm_data.py: contains several classes for handling the language model data in different ways (as words, as characters, sentence-level or not)
+* run_epoch.py: calls lm_data to get batches of data, feeds the batches to the language model and calculates the probability/perplexity
+* trainer.py: several classes for training the model: with a fixed schedule (decaying learning rate), early stopping with (fixed) decaying learning rate or early stopping with a learning rate adapted depending on the validation perplexity
 * writer.py: for writing to multiple output streams
+
 
 # Example commands
 
-For these examples, you can download the [Penn Treebank] (https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file.
+For these examples, you can download the [Penn Treebank] (https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
-Train a small language model on Penn Treebank (sentence-level):
+Train and evaulate a small language model on Penn Treebank (sentence-level):
 
-python train_lm.py --config ../config/ptb_word_small_sentence.config
-
-Rescore a list of (N-best) hypotheses:
-
-python lm_rescore_nbest.py --config ../config/ptb_word_small_sentence.config.nbest_test
-
-Train + rescore with the trained model:
-
-./train+rescore.sh ../config/ptb_word_small_sentence.config ../nbest/test
+python main.py --config ../config/ptb_word_small_sentence.config
 
 # Contact
 
