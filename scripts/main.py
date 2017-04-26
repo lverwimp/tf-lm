@@ -4,19 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import time, os, sys, time, random  
-
-# Condor: adapt PYTHONPATH and LD_LIBRARY_PATH 
-if 'PYTHONPATH' not in os.environ:
-	os.environ['PYTHONPATH'] = '/users/spraak/spch/prog/spch/tensorflow-1.1.0/lib/python2.7/site-packages'
-	if 'LD_LIBRARY_PATH' not in os.environ:
-		os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda-8.0/lib64:/users/spraak/spch/prog/spch/cudnn-5.1/cuda/lib64'
-	try:
-		os.system('/usr/bin/python ' + ' '.join(sys.argv))
-	        sys.exit(0)
-	except Exception, exc:
-	        print('failed executing')
-	        sys.exit(1)           
-
+       
 import numpy as np
 import tensorflow as tf
 
