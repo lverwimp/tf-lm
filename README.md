@@ -1,4 +1,6 @@
 # tf-languagemodel
+**New version** of the scripts: different structure + now compatible with TensorFlow v1.1. If you want to continue using the old version, go to branch v0.
+
 This repository contains scripts for recurrent neural network language modeling with TensorFlow (based on the [TensorFlow tutorial] (https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html)).
 
 For now, scripts for training a word- or character-level LSTM language model and rescoring n-best hypotheses are included.
@@ -6,7 +8,7 @@ For now, scripts for training a word- or character-level LSTM language model and
 # Installation
 
 * Python version used: 2.7.5. 
-* Install [TensorFlow] (https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). Note: these scripts are compatible with version 0.11! Adapting them to the latest TensorFlow version is still on my to do list.
+* Install [TensorFlow] (https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.1.
 * Modify the config files in config/: change the pathnames and optionally the parameters.
 
 # Options
@@ -19,11 +21,15 @@ For now, scripts for training a word- or character-level LSTM language model and
 
 # Code overview
 
-Main scripts:
+Main script:
 
-* train_lm.py: train a language model
-* lm_rescore_nbest.py: use a trained language model for n-best rescoring
-* train+rescore.sh: combines the above 2 scripts: trains a language model and then uses the same model for rescoring
+* main.py:
+  * --config: configuration file specifying all options
+  * --train: boolean marking whether you want to train the model or not (default = True)
+  * --valid: boolean marking whether you want to validate the model or not (default = True)
+  * --test: boolean marking whether you want to test the model or not (default = True)
+  * --device: use with 'cpu' if you want to explicitly run on cpu, otherwise it will try to run on gpu
+  
 
 Other scripts:
 
