@@ -30,7 +30,7 @@ Options in the configuration file:
 
 # Optimization
 
-* **optimizer**: type of optimizer (stochastic gradient descent (sgd) or adam)
+* **optimizer**: type of optimizer (stochastic gradient descent (sgd), adam or adagrad)
 * **softmax**: full or sampled
 
 # Regularization
