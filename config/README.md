@@ -30,8 +30,8 @@ Options in the configuration file:
 
 # Optimization
 
-* **optimizer**: type of optimizer (stochastic gradient descent (sgd), adam or adagrad)
-* **softmax**: full or sampled
+* **optimizer**: type of optimizer (stochastic gradient descent ('sgd'), 'adam' or 'adagrad')
+* **softmax**: 'full' or 'sampled'
 
 # Regularization
 
@@ -41,22 +41,22 @@ Options in the configuration file:
 # Training schedules
 
 * **trainer**:
-  * trainer: Fixed training schedule with a fixed learning rate decay schedule. Used in combination with
+  * 'trainer': Fixed training schedule with a fixed learning rate decay schedule. Used in combination with
     * **learning_rate**: initial learning rate
     * **max_epoch**: number of epochs during which the initial learning rate should be used
     * **lr_decay**: determines how fast the learning rate decays
     * **max_max_epoch**: the total number of epochs to train
-  * earlyStopping: Early stopping based on comparison with previous *n* validation perplexities, but with fixed learning rate decay schedule. Used in combination with:
+  * 'earlyStopping': Early stopping based on comparison with previous *n* validation perplexities, but with fixed learning rate decay schedule. Used in combination with:
     * same parameters as for trainer
     * **early_stop** = *n*: compare with *n* previous epochs, if the validation perplexity has not improved for *n* times, stop training
-  * validHalve: Early stopping based on comparison of previous validation perplexity, learning rate is halved each time no improvement is seen (until it has been halved *n* times). Used in combination with:
+  * 'validHalve': Early stopping based on comparison of previous validation perplexity, learning rate is halved each time no improvement is seen (until it has been halved *n* times). Used in combination with:
     * **learning_rate**: initial learning rate
     * **valid_halve** = *n*: the number of times the learning rate can be halved before training is stopped
     
 # Type of data
 
-* **per_sentence** (optional): by default, the network trains on batches that contain parts of sentences/multiple sentences; if this option is set to True, each sentence individually is processed (padded until the length of the longest sentence in the data)
-* **char** (optional): by default, the data is read as words, but if this option is set to True, the model will train on character level
+* **per_sentence** (optional): by default, the network trains on batches that contain parts of sentences/multiple sentences; if this option is set to 'True', each sentence individually is processed (padded until the length of the longest sentence in the data)
+* **char** (optional): by default, the data is read as words, but if this option is set to 'True', the model will train on character level
 
 # Rescoring
 
