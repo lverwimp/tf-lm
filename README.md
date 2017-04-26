@@ -14,10 +14,17 @@ For now, scripts for training a word- or character-level LSTM language model and
 # Options
 
 * Word-level and character-level language models.
-* Early stopping based on comparison of previous *n* validation perplexities.
-* Optimizers: stochastic gradient descent and adam (with learning rate decay).
-* Train on mini-batches (that can contain multiple sentences/parts of sentences) or on padded sentences.
-* Other features from the [TensorFlow tutorial](https://www.tensorflow.org/versions/r0.11/tutorials/recurrent/index.html).
+* Train on sentence-level (with all sentences padded until the length of the longest sentence in the dataset) or train on batches that may contain multiple sentences. 
+  * e.g. across sentence boundaries (default): "owned by \<unk\> & \<unk\> co. was under contract with <unk> to make the cigarette filters \<eos\> the finding probably"
+  * e.g. sentence-level: 
+    * "\<bos\> the plant which is owned by \<unk\> & \<unk\> co. was under contract with \<unk\> to make the cigarette filters \<eos\> @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @"
+    * "\<bos\> the finding probably will support those who argue that the u.s. should regulate the class of asbestos including <\unk\> more \<unk\> than the common kind of asbestos \<unk\> found in most schools and other buildings dr. \<unk\> said \<eos\> @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @"
+* Training schedules:
+  * Fixed training schedule with a fixed learning rate decay schedule
+  * Early stopping based on comparison with previous *n* validation perplexities, but with fixed learning rate decay schedule
+  * Early stopping based on comparison of previous validation perplexity, learning rate is halved each time no improvement is seen (until it has been halved *n* times)
+* Optimizers: stochastic gradient descent, adam, adagrad.
+* Full softmax or sampled softmax. 
 
 # Code overview
 
@@ -45,7 +52,7 @@ Other scripts:
 
 For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
-Train and evaulate a small language model on Penn Treebank (sentence-level):
+Train and evualate a small language model on Penn Treebank (sentence-level):
 
 python main.py --config ../config/ptb_word_small_sentence.config
 
