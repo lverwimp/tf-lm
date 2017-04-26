@@ -4,36 +4,64 @@ The pathnames in the config files should be adapted to your local pathnames.
 
 Options in the configuration file:
 
-Obligatory:
-* **name**: prefix for the name of the final model
-* **log**: name for the log file
-* **save_path**: path where the checkpoint files will be saved
-* **data_path**: path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt'
-* **vocab_size**: size of the vocabulary
-* **vocab**: can be switched on if you want to train with a smaller vocabulary than in the original data (e.g. if you want to reduce the vocabulary of Penn Treebank to 5k instead of 10k, use '5' as value, replace all words in the data with the <UNK> symbol and rename the files like this: train.txt -> train_5k-unk.txt)
+# Files/directories
+
+* **log** (optional): name for the log file
+  * change LOG_DIR in main.py to a directory of your choice
+  * if no log is specified, the log file will be LOG_DIR/<basename of save_path>
+* **save_path**: path where the model will be saved
+* **data_path**: path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt' (or train_<size>k-unk.txt etc. if you are using a restricted vocabulary)
+
+# Size of the model
+
+* **vocab**: can be switched on if you want to train with a smaller vocabulary than in the original data
+  * False if you want to use the full vocabulary (data files are named 'train.txt' etc.) 
+  * size of vocab divided by 1000 (e.g. if you want to reduce the vocabulary of Penn Treebank to 5k instead of 10k, use '5' as value, replace all words in the data with the <UNK> symbol and rename the files like this: train.txt -> train_5k-unk.txt)
 * **layer**: type of cell (only LSTM implemented so far, but can be easily changed)
 * **num_layers**: number of hidden layers
-* **word_size**: size of the word (or character) embedding = size of the hidden layer
-* **num_steps**: number of steps used for enrolling when training with backpropagation through time
-* **init_scale**: the weights of the model will be randomly initialized, with a uniform distribution and values between -init_scale and init_scale
-* **learning_rate**: learning rate of the model
-* **max_grad_norm**: clip the gradients if their norm exceeds max_grad_norm
+* **size**: size of the word (or character) embedding = size of the hidden layer
 * **batch_size**: size of the mini-batch used in training
-* **max_epoch**: determines when the learning rate will start decaying
-* **max_max_epoch**: after max_max_epoch epochs, training will be stopped (in case of early stopping, it might be stopped earlier)
-* **dropout**: probability at which neurons are dropped (e.g. 0.75: 75% of neurons are dropped)
-* **lr_decay**: factor that determines the learning rate decay (the smaller lr_decay, the faster the decay)
+* **num_steps**: number of steps used for enrolling for training with backpropagation through time
+
+# Initialization
+
+* **init_scale**: the weights of the model will be randomly initialized, with a uniform distribution and values between -init_scale and init_scale
 * **forget_bias**: initial bias of the forget gate in the LSTM cell
+
+# Optimization
+
 * **optimizer**: type of optimizer (stochastic gradient descent (sgd) or adam)
+* **softmax**: full or sampled
 
-Optional:
-* **per_sentence**: by default, the network trains on batches that contain parts of sentences/multiple sentences; if this option is set, each sentence individually is processed (padded until the length of the longest sentence in the data)
+# Regularization
 
- !!! do not compare perplexities of language models trained per sentence with perplexities of language models trained on batches (the padding symbols seriously decrease the perplexity because they are easy to predict) !!!
-* **early_stop**: e.g. 2; if a value for early_stop is given, training will be stopped if the validation perplexity has not improved compared to the last 2 epochs
-* **nbest**: file with (n-best) hypotheses that should be rescored (the model should already be trained and be specified as 'lm'); can only be used with sentence-level language models!
-* **lm**: trained model that can be used for n-best rescoring
-* **result**: file in which the results for n-best rescoring will be written
-* **char**: train on character level
+* **max_grad_norm**: clip the gradients if their norm exceeds max_grad_norm
+* **dropout**: probability at which neurons are dropped (e.g. 0.75: 75% of neurons are dropped)
+
+# Training schedules
+
+* **trainer**:
+  * trainer: Fixed training schedule with a fixed learning rate decay schedule. Used in combination with
+    * **learning_rate**: initial learning rate
+    * **max_epoch**: number of epochs during which the initial learning rate should be used
+    * **lr_decay**: determines how fast the learning rate decays
+    * **max_max_epoch**: the total number of epochs to train
+  * earlyStopping: Early stopping based on comparison with previous *n* validation perplexities, but with fixed learning rate decay schedule. Used in combination with:
+    * same parameters as for trainer
+    * **early_stop** = *n*: compare with *n* previous epochs, if the validation perplexity has not improved for *n* times, stop training
+  * validHalve: Early stopping based on comparison of previous validation perplexity, learning rate is halved each time no improvement is seen (until it has been halved *n* times). Used in combination with:
+    * **learning_rate**: initial learning rate
+    * **valid_halve** = *n*: the number of times the learning rate can be halved before training is stopped
+    
+# Type of data
+
+* **per_sentence** (optional): by default, the network trains on batches that contain parts of sentences/multiple sentences; if this option is set to True, each sentence individually is processed (padded until the length of the longest sentence in the data)
+* **char** (optional): by default, the data is read as words, but if this option is set to True, the model will train on character level
+
+# Rescoring
+
+* **rescore** (optional): the data file that should be rescored, containing 1 hypothesis per line
+* **result** (optional): file in which the results for n-best rescoring will be written
+
 
 
