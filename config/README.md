@@ -6,11 +6,11 @@ Options in the configuration file:
 
 # Files/directories
 
+* **data_path**: path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt' (or train_<size>k-unk.txt etc. if you are using a restricted vocabulary)
+* **save_path**: path where the model will be saved
 * **log** (optional): name for the log file
   * change LOG_DIR in main.py to a directory of your choice
   * if no log is specified, the log file will be LOG_DIR/<basename of save_path>
-* **save_path**: path where the model will be saved
-* **data_path**: path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt' (or train_<size>k-unk.txt etc. if you are using a restricted vocabulary)
 
 # Size of the model
 
