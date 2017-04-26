@@ -51,4 +51,4 @@ python main.py --config ../config/ptb_word_small_sentence.config
 
 # Contact
 
-If you have any questions, mail to lyan.verwimp@esat.kuleuven.be.
+If you have any questions, mail to lyan.verwimp [at] esat.kuleuven.be.
