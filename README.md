@@ -56,6 +56,8 @@ Train and evualate a small language model on Penn Treebank:
 
 python main.py --config ../config/ptb_word_small_dropout0.75.config
 
+This should give you a train perplexity of (approximately) 65, validation perplexity of 101 and a test perplexity of 97.
+
 # Contact
 
 If you have any questions, mail to lyan.verwimp [at] esat.kuleuven.be.
