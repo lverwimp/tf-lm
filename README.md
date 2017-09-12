@@ -59,9 +59,20 @@ Other scripts:
 
 # Possible combinations
 
-| Input unit | Batching | Testing options |
+| Input unit | Batching | Model | Testing options |
 | --- | --- | --- |
-| Word | Discourse | Perplexity |
+| Word | Discourse | Unidirectional | Perplexity |
+| Word | Discourse | Unidirectional | Rescore |
+| Word | Discourse | Unidirectional | Predict next word(s) |
+| Word | Discourse | Unidirectional | Generate -debug 2 |
+| Word | Sentence | Unidirectional | Perplexity | 
+| Word | Sentence | Unidirectional | Rescore | 
+| Word | Sentence | Unidirectional | Generate -debug 2 |
+| Word | Sentence | Bidirectional | Perplexity | 
+| Character | Discourse | Unidirectional | Perplexity |
+| Character | Discourse | Unidirectional | Rescore |
+| Character | Discourse | Unidirectional | Predict next word(s) |
+
 
 
 # Example commands
