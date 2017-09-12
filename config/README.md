@@ -7,7 +7,9 @@ Options in the configuration file:
 # Files/directories
 
 * **data_path**: path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt' (or train_<size>k-unk.txt etc. if you are using a restricted vocabulary)
+
 * **save_path**: path where the model will be saved
+
 * **log** (optional): name for the log file
   * change LOG_DIR in main.py to a directory of your choice
   * if no log is specified, the log file will be LOG_DIR/\<basename of save_path\>
@@ -17,6 +19,7 @@ Options in the configuration file:
 * **vocab**: can be switched on if you want to train with a smaller vocabulary than in the original data
   * False if you want to use the full vocabulary (data files are named 'train.txt' etc.) 
   * size of vocab divided by 1000 (e.g. if you want to reduce the vocabulary of Penn Treebank to 5k instead of 10k, use '5' as value, replace all words in the data with the \<unk\> symbol and rename the files like this: train.txt -> train_5k-unk.txt)
+  
   !!! by default, out-of-vocabulary words are assumed to be replaced by \<unk\>, if this is for example \<UNK\> in your dataset, adapt the __init__ function in the lm_data.LMData class (self.unk and self.replace_unk).
 * **layer**: type of cell (only LSTM implemented so far, but can be easily changed)
 * **num_layers**: number of hidden layers
