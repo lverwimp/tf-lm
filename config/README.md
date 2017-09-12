@@ -93,7 +93,7 @@ Default: each batch is of length *num_steps* and may contain multiple (parts of)
   * **max_num_predictions**: generate only *max_num_predictions* (default = until <eos> is predicted or until 100 words are generated)
 
 All 3 options should be combined with:
-* **result** (optional): file in which the results for n-best rescoring will be written
+* **result** (optional): results file
 
 
 
