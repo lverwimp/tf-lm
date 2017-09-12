@@ -26,10 +26,10 @@ This repository contains scripts for recurrent neural network language modeling 
 * Optimizers: stochastic gradient descent, adam, adagrad.
 * Full softmax or sampled softmax. 
 * Testing options:
- * Perplexity
- * Re-scoring: log probabilities per sentence
- * Predicting the next word(s) given a prefix
- * Generate debugging file similar to SRILM's -debug 2 option: can be used to calculate interpolation weights
+  * Perplexity
+  * Re-scoring: log probabilities per sentence
+  * Predicting the next word(s) given a prefix
+  * Generate debugging file similar to SRILM's -debug 2 option: can be used to calculate interpolation weights
  
 
 # Code overview
@@ -57,13 +57,11 @@ Other scripts:
 
 # Example commands
 
-For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
+For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42), [WikiText] (https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
-Train and evualate a small language model on Penn Treebank:
+Train and evaluate a word-level language model on Penn Treebank:
 
-python main.py --config ../config/ptb_word_small_dropout0.75.config
-
-This should give you a train perplexity of (approximately) 65, validation perplexity of 101 and a test perplexity of 97.
+python main.py --config ../config/en-ptb_word_discourse.config
 
 # Contact
 
