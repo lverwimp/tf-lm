@@ -57,7 +57,7 @@ Other scripts:
 
 # Example commands
 
-For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42), [WikiText] (https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
+For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42), [WikiText](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
 Train and evaluate a word-level language model on Penn Treebank:
 
