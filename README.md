@@ -70,8 +70,9 @@ Other scripts:
 | Word | Discourse | Unidirectional | Generate debug file | --config ../config/en-ptb_word_discourse_debug2.config
 | Word | Sentence | Unidirectional | Perplexity | --config ../config/en-ptb_word_sentence.config (--train False --valid False)
 | Word | Sentence | Unidirectional | Rescore | --config ../config/en-ptb_word_sentence_rescore.config
-| Word | Sentence | Unidirectional | Generate debug file |
-| Word | Sentence | Bidirectional | Perplexity | 
+| Word | Discourse | Unidirectional | Predict next word(s) | --config ../config/en-ptb_word_sentence_predict.config
+| Word | Sentence | Unidirectional | Generate debug file | --config ../config/en-ptb_word_sentence_debug2.config
+| Word | Sentence | Bidirectional | Perplexity | --config ../config/en-ptb_word_sentence_bidir.config (--train False --valid False)
 | Character | Discourse | Unidirectional | Perplexity | --config en-ptb_char_discourse.config (--train False --valid False)
 | Character | Discourse | Unidirectional | Rescore |
 | Character | Discourse | Unidirectional | Predict next word(s) |
