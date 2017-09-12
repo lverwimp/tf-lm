@@ -79,9 +79,11 @@ Default: input and output unit = word.
 
 # Batching
 
-Default: each batch is of length *num_steps* and may contain multiple (parts of) sentences.
+Default: each batch is of length *num_steps* and may contain multiple (parts of) sentences ('discourse').
 
-* **per_sentence** (optional): if this option is set to 'True', each sentence individually is processed (padded until the length of the longest sentence in the data)
+* **per_sentence** (optional): if this option is set to 'True', each sentence individually is processed and padded until the length of the longest sentence in the data ('sentence').
+
+* **not_trained_with_padding** (optional): if a 'discourse' model is used for rescoring, generating a -debug 2 file or predicting the next words, this option should be added to make sure the \<unk\> symbol is used as padding symbol.
 
 # Testing options
 
