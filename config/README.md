@@ -13,6 +13,13 @@ Options in the configuration file:
 * **log** (optional): name for the log file
   * change LOG_DIR in main.py to a directory of your choice
   * if no log is specified, the log file will be LOG_DIR/\<basename of save_path\>
+  
+# Reading data
+
+Default: all data is read at once and kept in memory. If the dataset is too large for this, use:
+
+* **stream_data** (optional): Read data sentence by sentence. This assumes that the data file contains one sentence per line and that batching is sentence-level!
+  * **read_vocab_from_file**: To speed up more, read the vocabulary from file. The vocabulary file should contain 2 columns: the words and their ids.
 
 # Size of the model
 
@@ -82,6 +89,8 @@ Default: input and output unit = word.
 Default: each batch is of length *num_steps* and may contain multiple (parts of) sentences ('discourse').
 
 * **per_sentence** (optional): if this option is set to 'True', each sentence individually is processed and padded until the length of the longest sentence in the data ('sentence').
+
+* **padding_symbol** (optional): the default padding symbol is '@'; if your dataset already contains this symbol, choose another one that doesn't occur in the data.
 
 * **not_trained_with_padding** (optional): if a 'discourse' model is used for rescoring, generating a -debug 2 file or predicting the next words, this option should be added to make sure the \<unk\> symbol is used as padding symbol.
 
