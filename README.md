@@ -35,6 +35,7 @@ For more information on how to specify these options in a configuration file, se
   * Re-scoring: log probabilities per sentence
   * Predicting the next word(s) given a prefix
   * Generate debugging file similar to SRILM's -debug 2 option: can be used to calculate interpolation weights
+* Reading the data all at once or streaming sentence per sentence.
  
 
 # Code overview
