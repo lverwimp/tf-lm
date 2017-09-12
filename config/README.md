@@ -19,7 +19,7 @@ Options in the configuration file:
 Default: all data is read at once and kept in memory. If the dataset is too large for this, use:
 
 * **stream_data** (optional): Read data sentence by sentence. This assumes that the data file contains one sentence per line and that batching is sentence-level!
-  * **read_vocab_from_file**: To speed up more, read the vocabulary from file. The vocabulary file should contain 2 columns: the words and their ids.
+  * **read_vocab_from_file**: To speed up more, read the vocabulary from file. The vocabulary file should contain 2 columns: the words and their ids. The *data_path* should also contain a file *max_sentence_length* with the length of the longest sentence (will be the length of every batch).
 
 # Size of the model
 
