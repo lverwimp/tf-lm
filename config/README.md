@@ -63,19 +63,21 @@ Default: input and output unit = word.
 
 * **char** (optional): by default, the data is read as words, but if this option is set to 'True', the model will train on character level (both input and output)
 * **char_ngram**: specify *n*, input consists of a vector with counts for all *n*-grams in the current word, output is still words
-* **word_char_concat**: inputs consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word. Used in combination with:
+* **word_char_concat**: inputs consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word, outpt is still words. Used in combination with:
   * **num_char**: number of characters to add (if the current word is shorter than *num_char*, padding symbols are used; if it is longer than *num_char*, only part of the characters in the word are added)
   * **char_size**: size assigned to each character embedding (size for the word embedding = *size* - *num_char* * *char_size*)
   * **order**: 
     * *begin_first*: start adding characters from the beginning of the word (e.g. 4 characters from 'pineapple': p, i, n, e)
-    *end_first*: start adding characters from the end of the word (e.g. 4 characters from 'pineapple': e, l, p, p)
-    *both*: add *num_char* characters starting from the beginning and *num_char* starting from the end (e.g. 4 characters from 'pineapple': p, i, n, e; e, l, p, p)
+    * *end_first*: start adding characters from the end of the word (e.g. 4 characters from 'pineapple': e, l, p, p)
+    * *both*: add *num_char* characters starting from the beginning and *num_char* starting from the end (e.g. 4 characters from 'pineapple': p, i, n, e; e, l, p, p)
 
 # Batching
 
-* **per_sentence** (optional): by default, the network trains on batches that contain parts of sentences/multiple sentences; if this option is set to 'True', each sentence individually is processed (padded until the length of the longest sentence in the data)
+Default: each batch is of length *num_steps* and may contain multiple (parts of) sentences.
 
-# Rescoring
+* **per_sentence** (optional): if this option is set to 'True', each sentence individually is processed (padded until the length of the longest sentence in the data)
+
+# Testing options
 
 * **rescore** (optional): the data file that should be rescored, containing 1 hypothesis per line
 
