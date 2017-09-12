@@ -60,7 +60,7 @@ Other scripts:
 # Possible combinations
 
 | Input unit | Batching | Model | Testing options |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Word | Discourse | Unidirectional | Perplexity |
 | Word | Discourse | Unidirectional | Rescore |
 | Word | Discourse | Unidirectional | Predict next word(s) |
