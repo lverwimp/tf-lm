@@ -5,6 +5,8 @@ These scripts are compatible with TensorFlow **v1.1**.
 
 This repository contains scripts for recurrent neural network language modeling with TensorFlow.
 
+!!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
+
 # Installation and setup
 
 * Python version used: 2.7.5. 
