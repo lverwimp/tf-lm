@@ -13,6 +13,8 @@ This repository contains scripts for recurrent neural network language modeling 
 
 # Options
 
+For more information on how to specify these options in a configuration file, see the README in config/.
+
 * Input units: words, characters, character n-gram or concatenated word and characters [1].
 * Train on sentence level (with all sentences padded until the length of the longest sentence in the dataset) or train on batches that may contain multiple sentences. 
   * e.g. across sentence boundaries (default): "owned by \<unk\> & \<unk\> co. was under contract with <unk> to make the cigarette filters \<eos\> the finding probably"
@@ -26,7 +28,7 @@ This repository contains scripts for recurrent neural network language modeling 
 * Optimizers: stochastic gradient descent, adam, adagrad.
 * Full softmax or sampled softmax. 
 * Testing options:
-  * Perplexity
+  * Perplexity (of the standard validation set or test set: same configuration file as for training, but set --train False and --test False or --valid False respectively)
   * Re-scoring: log probabilities per sentence
   * Predicting the next word(s) given a prefix
   * Generate debugging file similar to SRILM's -debug 2 option: can be used to calculate interpolation weights
