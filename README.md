@@ -61,8 +61,8 @@ Other scripts:
 
 | Input unit | Batching | Model | Testing options | Example
 | --- | --- | --- | --- | --- |
-| Word | Discourse | Unidirectional | Perplexity | python main.py --config [config](../config/en-ptb_word_discourse.config) --train False --valid False
-| Word | Discourse | Unidirectional | Rescore |
+| Word | Discourse | Unidirectional | Perplexity | python main.py --config ../config/en-ptb_word_discourse.config --train False --valid False
+| Word | Discourse | Unidirectional | Rescore | python main.py --config ../config/en-ptb_word_discourse_rescore.config
 | Word | Discourse | Unidirectional | Predict next word(s) |
 | Word | Discourse | Unidirectional | Generate -debug 2 |
 | Word | Sentence | Unidirectional | Perplexity | 
