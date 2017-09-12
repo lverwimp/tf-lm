@@ -17,7 +17,7 @@ This repository contains scripts for recurrent neural network language modeling 
 For more information on how to specify these options in a configuration file, see the README in config/.
 
 * Input units: words, characters, character n-gram or concatenated word and characters [1].
-* Train on sentence level (with all sentences padded until the length of the longest sentence in the dataset) or train on batches that may contain multiple sentences. 
+* Train on sentence level ('sentence'), with all sentences padded until the length of the longest sentence in the dataset, or train on batches that may contain multiple sentences ('discourse'). 
   * e.g. across sentence boundaries (default): "owned by \<unk\> & \<unk\> co. was under contract with <unk> to make the cigarette filters \<eos\> the finding probably"
   * e.g. sentence-level: 
     * "\<bos\> the plant which is owned by \<unk\> & \<unk\> co. was under contract with \<unk\> to make the cigarette filters \<eos\> @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @"
