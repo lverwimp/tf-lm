@@ -85,7 +85,9 @@ Default: each batch is of length *num_steps* and may contain multiple (parts of)
 
 # Testing options
 
-* **rescore** (optional): the data file that should be rescored, containing 1 hypothesis per line
+For all 3 options below: if set to 'True', the default test set will be evaluated, if a file is specified, that file will be evaluated.
+
+* **rescore** (optional): rescore a set of sentences/hypotheses and write their log probabilities to file
 
 * **debug2** (optional): generate a file similar to the output of SRILM's -debug 2 option, that can be used for calculating interpolation weights
 
