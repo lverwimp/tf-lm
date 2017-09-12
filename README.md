@@ -59,9 +59,9 @@ Other scripts:
 
 # Possible combinations
 
-| Input unit | Batching | Model | Testing options |
-| --- | --- | --- | --- |
-| Word | Discourse | Unidirectional | Perplexity |
+| Input unit | Batching | Model | Testing options | Example
+| --- | --- | --- | --- | --- |
+| Word | Discourse | Unidirectional | Perplexity | python main.py --config [config](../config/en-ptb_word_discourse.config) --train False --valid False
 | Word | Discourse | Unidirectional | Rescore |
 | Word | Discourse | Unidirectional | Predict next word(s) |
 | Word | Discourse | Unidirectional | Generate -debug 2 |
