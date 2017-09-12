@@ -59,17 +59,17 @@ Other scripts:
 
 # Possible combinations
 
-| Input unit | Batching | Model | Testing options | Example
+| Input unit | Batching | Model | Testing options | Example (arguments only)
 | --- | --- | --- | --- | --- |
-| Word | Discourse | Unidirectional | Perplexity | python main.py --config ../config/en-ptb_word_discourse.config --train False --valid False
-| Word | Discourse | Unidirectional | Rescore | python main.py --config ../config/en-ptb_word_discourse_rescore.config
+| Word | Discourse | Unidirectional | Perplexity | --config ../config/en-ptb_word_discourse.config (--train False --valid False)
+| Word | Discourse | Unidirectional | Rescore | --config ../config/en-ptb_word_discourse_rescore.config
 | Word | Discourse | Unidirectional | Predict next word(s) |
 | Word | Discourse | Unidirectional | Generate -debug 2 |
 | Word | Sentence | Unidirectional | Perplexity | 
 | Word | Sentence | Unidirectional | Rescore | 
 | Word | Sentence | Unidirectional | Generate -debug 2 |
 | Word | Sentence | Bidirectional | Perplexity | 
-| Character | Discourse | Unidirectional | Perplexity |
+| Character | Discourse | Unidirectional | Perplexity | --config en-ptb_char_discourse.config (--train False --valid False)
 | Character | Discourse | Unidirectional | Rescore |
 | Character | Discourse | Unidirectional | Predict next word(s) |
 
