@@ -66,15 +66,17 @@ Other scripts:
 | --- | --- | --- | --- | --- |
 | Word | Discourse | Unidirectional | Perplexity | --config ../config/en-ptb_word_discourse.config (--train False --valid False)
 | Word | Discourse | Unidirectional | Rescore | --config ../config/en-ptb_word_discourse_rescore.config
-| Word | Discourse | Unidirectional | Predict next word(s) |
-| Word | Discourse | Unidirectional | Generate -debug 2 |
-| Word | Sentence | Unidirectional | Perplexity | 
-| Word | Sentence | Unidirectional | Rescore | 
-| Word | Sentence | Unidirectional | Generate -debug 2 |
+| Word | Discourse | Unidirectional | Predict next word(s) | --config ../config/en-ptb_word_discourse_predict.config
+| Word | Discourse | Unidirectional | Generate debug file | --config ../config/en-ptb_word_discourse_debug2.config
+| Word | Sentence | Unidirectional | Perplexity | --config ../config/en-ptb_word_sentence.config (--train False --valid False)
+| Word | Sentence | Unidirectional | Rescore | --config ../config/en-ptb_word_sentence_rescore.config
+| Word | Sentence | Unidirectional | Generate debug file |
 | Word | Sentence | Bidirectional | Perplexity | 
 | Character | Discourse | Unidirectional | Perplexity | --config en-ptb_char_discourse.config (--train False --valid False)
 | Character | Discourse | Unidirectional | Rescore |
 | Character | Discourse | Unidirectional | Predict next word(s) |
+| Word-Character | Discourse | Unidirectional | Perplexity |
+| Character n-gram | Discourse | Unidirectional | Perplexity |
 
 
 
