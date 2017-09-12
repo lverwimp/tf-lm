@@ -57,6 +57,12 @@ Other scripts:
 * trainer.py: classes for training the model
 * writer.py: for writing to multiple output streams
 
+# Possible combinations
+
+| Input unit | Batching | Testing options |
+| --- | --- | --- |
+| Word | Discourse | Perplexity |
+
 
 # Example commands
 
