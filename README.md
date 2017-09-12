@@ -1,11 +1,11 @@
 # tf-languagemodel
-**New version** of the scripts: different structure + now compatible with TensorFlow v1.1. If you want to continue using the old version, go to branch v0.
+**New version** of the scripts: different structure, more options + pre-trained language models.
+
+These scripts are compatible with TensorFlow **v1.1**. 
 
 This repository contains scripts for recurrent neural network language modeling with TensorFlow.
 
-For now, scripts for training a word- or character-level LSTM language model and rescoring n-best hypotheses are included.
-
-# Installation
+# Installation and setup
 
 * Python version used: 2.7.5. 
 * Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.1.
@@ -13,18 +13,24 @@ For now, scripts for training a word- or character-level LSTM language model and
 
 # Options
 
-* Word-level and character-level language models.
-* Train on sentence-level (with all sentences padded until the length of the longest sentence in the dataset) or train on batches that may contain multiple sentences. 
+* Input units: words, characters, character n-gram or concatenated word and characters [1].
+* Train on sentence level (with all sentences padded until the length of the longest sentence in the dataset) or train on batches that may contain multiple sentences. 
   * e.g. across sentence boundaries (default): "owned by \<unk\> & \<unk\> co. was under contract with <unk> to make the cigarette filters \<eos\> the finding probably"
   * e.g. sentence-level: 
     * "\<bos\> the plant which is owned by \<unk\> & \<unk\> co. was under contract with \<unk\> to make the cigarette filters \<eos\> @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @"
     * "\<bos\> the finding probably will support those who argue that the u.s. should regulate the class of asbestos including <\unk\> more \<unk\> than the common kind of asbestos \<unk\> found in most schools and other buildings dr. \<unk\> said \<eos\> @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @"
 * Training schedules:
-  * Fixed training schedule with a fixed learning rate decay schedule
-  * Early stopping based on comparison with previous *n* validation perplexities, but with fixed learning rate decay schedule
-  * Early stopping based on comparison of previous validation perplexity, learning rate is halved each time no improvement is seen (until it has been halved *n* times)
+  * Fixed training schedule
+  * Early stopping based on comparison with previous *n* validation perplexities
+  * Learning rate decay
 * Optimizers: stochastic gradient descent, adam, adagrad.
 * Full softmax or sampled softmax. 
+* Testing options:
+ * Perplexity
+ * Re-scoring: log probabilities per sentence
+ * Predicting the next word(s) given a prefix
+ * Generate debugging file similar to SRILM's -debug 2 option: can be used to calculate interpolation weights
+ 
 
 # Code overview
 
@@ -41,10 +47,11 @@ Main script:
 Other scripts:
 
 * configuration.py: handles configuration files
-* lm.py: class for language model
-* lm_data.py: contains several classes for handling the language model data in different ways (as words, as characters, sentence-level or not)
+* lm.py: classes for language models
+* lm_data.py: contains several classes for handling the language model data in different ways
+* multiple_lm_data.py: class that handles several lm_data classes (for models with concatenated word and character embedding [1])
 * run_epoch.py: calls lm_data to get batches of data, feeds the batches to the language model and calculates the probability/perplexity
-* trainer.py: several classes for training the model: with a fixed schedule (decaying learning rate), early stopping with (fixed) decaying learning rate or early stopping with a learning rate adapted depending on the validation perplexity
+* trainer.py: classes for training the model
 * writer.py: for writing to multiple output streams
 
 
@@ -61,3 +68,5 @@ This should give you a train perplexity of (approximately) 65, validation perple
 # Contact
 
 If you have any questions, mail to lyan.verwimp [at] esat.kuleuven.be.
+
+[1] Verwimp, L., Pelemans, J., hamme, H. V., and Wambacq, P. (2017). Character-Word LSTM Language Models. *Proceedings of the European Chapter of the Association for Computational Linguistics (EACL)*, pages 417–427.
