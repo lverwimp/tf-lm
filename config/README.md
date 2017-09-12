@@ -27,6 +27,12 @@ Options in the configuration file:
 * **batch_size**: size of the mini-batch used in training
 * **num_steps**: number of steps used for enrolling for training with backpropagation through time
 
+# Type of model
+
+Default = unidirectional.
+
+* **bidirectional** (optional): if set to True, the model is trained as a bidirectional LM
+
 # Initialization
 
 * **init_scale**: the weights of the model will be randomly initialized, with a uniform distribution and values between -init_scale and init_scale
@@ -62,8 +68,8 @@ Options in the configuration file:
 Default: input and output unit = word.
 
 * **char** (optional): by default, the data is read as words, but if this option is set to 'True', the model will train on character level (both input and output)
-* **char_ngram**: specify *n*, input consists of a vector with counts for all *n*-grams in the current word, output is still words
-* **word_char_concat**: inputs consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word, outpt is still words. Used in combination with:
+* **char_ngram** (optional): specify *n*, input consists of a vector with counts for all *n*-grams in the current word, output is still words
+* **word_char_concat** (optional): inputs consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word, outpt is still words. Used in combination with:
   * **num_char**: number of characters to add (if the current word is shorter than *num_char*, padding symbols are used; if it is longer than *num_char*, only part of the characters in the word are added)
   * **char_size**: size assigned to each character embedding (size for the word embedding = *size* - *num_char* * *char_size*)
   * **order**: 
@@ -81,6 +87,12 @@ Default: each batch is of length *num_steps* and may contain multiple (parts of)
 
 * **rescore** (optional): the data file that should be rescored, containing 1 hypothesis per line
 
+* **debug2** (optional): generate a file similar to the output of SRILM's -debug 2 option, that can be used for calculating interpolation weights
+
+* **predict_next** (optional): generate the most likely sequence for every prefix in a given file
+  * **max_num_predictions**: generate only *max_num_predictions* (default = until <eos> is predicted or until 100 words are generated)
+
+All 3 options should be combined with:
 * **result** (optional): file in which the results for n-best rescoring will be written
 
 
