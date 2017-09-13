@@ -1003,7 +1003,7 @@ class charNGramData(LMData):
 		super(charNGramData, self).__init__(config, eval_config, TRAIN, VALID, TEST)
 
 		if not isinstance(self.config['char_ngram'],int):
-			raise ValueError("Specify what n should be used for the character n-grams.")
+			raise IOError("Specify what n should be used for the character n-grams.")
 		else:
 			self.n = self.config['char_ngram']
 
@@ -1011,7 +1011,14 @@ class charNGramData(LMData):
 		self.ngram_to_id = {}
 		self.id_to_ngram = {}
 
-		if 'add_word' in self.config and 'input_vocab' in self.config:
+		#if 'add_word' in self.config and 'input_vocab' in self.config:
+		if 'add_word' in self.config:
+
+			if not 'word_size' in self.config:
+				raise IOError("Specify the size that should be assigned to the word input (word_size).")
+			if not 'input_vocab_size' in self.config:
+				raise IOError("Specify the size of the word input vocabulary (input_vocab_size).")
+
 			self.input_item_to_id = {}
 			self.input_id_to_item = {}
 
@@ -1080,22 +1087,27 @@ class charNGramData(LMData):
 
 		# if only ngrams with a frequency > ngram_cutoff have to be kept
 		if 'ngram_cutoff' in self.config:
-			freq_ngrams = {ngram:freq for ngram, freq in freq_ngrams.items() if freq > self.config['ngram_cutoff']}
-
-		# unknown n-gram symbol
-		freq_ngrams['<UNKngram>'] = len(freq_ngrams)
+			if not isinstance(self.config['ngram_cutoff'],int):
+				raise ValueError("Specify what cutoff frequency should be used for the character n-grams.")
+			else:
+				freq_ngrams = {ngram:freq for ngram, freq in freq_ngrams.items() if freq > self.config['ngram_cutoff']}
 
 		ngrams = freq_ngrams.keys()
+
+		# special symbol to indicate whether the word contains (a) capital(s) or not
+		if 'capital' in self.config:
+			ngrams.append('<cap>')
+
+			# remove ngram with capitals from vocabulary
+			ngrams = [gram for gram in ngrams if gram.islower()]
+
+		# unknown n-gram symbol
+		ngrams.append('<UNKngram>')
 
 		self.ngram_to_id = dict(zip(ngrams, range(len(ngrams))))
 		self.id_to_ngram = dict(zip(range(len(ngrams)), ngrams))
 
 		print('Size of n-gram vocabulary: {0}'.format(len(self.ngram_to_id)))
-
-		# special symbol to indicate whether the word contains (a) capital(s) or not
-		if 'capital' in self.config:
-			self.ngram_to_id['<cap>'] = len(self.ngram_to_id)
-			self.id_to_ngram[len(self.id_to_ngram)] = '<cap>'
 
 	def build_skipgram_vocab(self, filename, skip):
 		'''Returns a set of all character skip-grams occurring in filename.'''
@@ -1335,17 +1347,22 @@ class charNGramData(LMData):
 		self.item_to_id, self.id_to_item = self.build_vocab(self.train_path)
 
 		# if input vocabulary is different from output vocabulary
-		if 'add_word' in self.config and 'input_vocab' in self.config:
-			train_file = "train_" + str(self.config['input_vocab']) + "k-unk.txt"
-			valid_file = "valid_" + str(self.config['input_vocab']) + "k-unk.txt"
-			test_file = "test_" + str(self.config['input_vocab']) + "k-unk.txt"
+		if 'add_word' in self.config:
+		 	if 'input_vocab' in self.config:
+				train_file = "train_" + str(self.config['input_vocab']) + "k-unk.txt"
+				valid_file = "valid_" + str(self.config['input_vocab']) + "k-unk.txt"
+				test_file = "test_" + str(self.config['input_vocab']) + "k-unk.txt"
+			else:
+				train_file = "train.txt"
+				valid_file = "valid.txt"
+				test_file = "test.txt"
 			input_train_path = os.path.join(self.config['data_path'], train_file)
 			input_valid_path = os.path.join(self.config['data_path'], valid_file)
 			input_test_path = os.path.join(self.config['data_path'], test_file)
 
 			# build vocab for input word representation
 			self.input_item_to_id, self.input_id_to_item = self.build_vocab(input_train_path)
-			print('self.input_item_to_id: {0}'.format(len(self.input_item_to_id)))
+
 
 		print('self.item_to_id: {0}'.format(len(self.item_to_id)))
 
@@ -1505,4 +1522,5 @@ class charNGramData(LMData):
 		#	self.iterator += 1
 
 		return x, y, self.end_reached
+
 
