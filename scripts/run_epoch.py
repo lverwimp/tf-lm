@@ -52,10 +52,21 @@ class run_epoch(object):
 			if end_reached:
 				break
 
-			if 'per_sentence' in self.model.config and self.test and \
-					self.data_object[0].id_to_item[x[0][0]] == self.data_object.PADDING_SYMBOL and \
-					self.data_object[0].id_to_item[y[0][0]] == self.data_object.PADDING_SYMBOL:
-				continue
+			#print('x: {0}'.format(x))
+			#print('x: {0}'.format(x.shape))
+
+			# testing: ignore padding symbols for sentence-level models
+			# (training: padding symbols are fed to the graph but ignored with seq_length)
+			if self.test and 'per_sentence' in self.model.config:
+				if 'word_char_concat' in self.model.config:
+					# self.data_object = tuple of LMData and multipleLMDataChar, x = tuple of word and characters
+					if self.data_object[0].id_to_item[x[0][0][0]] == self.data_object[0].PADDING_SYMBOL and \
+							self.data_object[0].id_to_item[y[0][0][0]] == self.data_object[0].PADDING_SYMBOL:
+						continue
+				else:
+					if self.data_object.id_to_item[x[0][0]] == self.data_object.PADDING_SYMBOL and \
+							self.data_object.id_to_item[y[0][0]] == self.data_object.PADDING_SYMBOL:
+						continue
 
 			# create feed_dict = what we feed into the graph
 			feed_dict = self.create_feed_dict(x, y, state, seq_lengths)
@@ -71,7 +82,7 @@ class run_epoch(object):
 			# determine new state: emtpy state or state of previous time step
 			state = self.get_new_state(vals)
 
-			if 'per_sentence' in self.model.config:
+			if 'per_sentence' in self.model.config and not self.test:
 				costs += vals["unnormalized_loss"]
 				iters += np.sum(seq_lengths)
 			else:
@@ -148,7 +159,7 @@ class run_epoch(object):
 			"cost": self.model.cost,
 			"final_state": self.model.final_state, # c and h of previous time step (for each hidden layer)
 			"input_sample": self.model.input_sample,
-			"target_sample": self.model.target_sample,
+			"target_sample": self.model.target_sample
 			}
 
 		# _train_op in training phase
@@ -158,7 +169,7 @@ class run_epoch(object):
 		if 'bidirectional' in self.model.config:
 			fetches["final_state_bw"] = self.model.final_state_bw
 
-		if 'per_sentence' in self.model.config:
+		if 'per_sentence' in self.model.config and self.model.config['num_steps'] > 1 and self.model.config['batch_size'] > 1 :
 			fetches["unnormalized_loss"] = self.model.unnormalized_loss
 
 		return fetches
@@ -351,7 +362,9 @@ class rescore(run_epoch):
 				# if the end of the sentence is not yet reached
 				# and if we are not printing the predictions
 				# (prediction will be added to the hypothesis, so we don't have to print it twice)
-				if input_word != self.data_object.PADDING_SYMBOL and not self.print_predictions:
+				if input_word != self.data_object.PADDING_SYMBOL and \
+						not self.print_predictions and \
+						input_word != '<bos>':
 					if 'char' in self.model.config:
 						# no space
 						self.results_f.write('{0}'.format(input_word))
@@ -389,6 +402,9 @@ class rescore(run_epoch):
 
 				if next_word == '<eos>':
 					next_word = '</s>'
+
+				if current_word == '<bos>':
+					current_word = '<s>'
 
 				# only the p( next_word | current_word ) = ... lines are needed
 				self.results_f.write('\tp( {0} | {1} )\t= [3gram] {2} [ {3} ]\n'.format(
@@ -556,3 +572,4 @@ class rescore(run_epoch):
 		prob_next_word = np.log10(softmax[0][y[0][0]])
 
 		return prob_next_word
+
