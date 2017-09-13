@@ -112,10 +112,12 @@ class LMData(object):
 			self.unk = '<unk>'
 			self.replace_unk = '<UNK>'
 
-		if 'rescore' in self.config:
+		if 'rescore' in self.config and isinstance(self.config['rescore'], str):
 			self.test_path = self.config['rescore']
 		elif 'predict_next' in self.config and isinstance(self.config['predict_next'], str):
 			self.test_path = self.config['predict_next']
+		elif 'debug2' in self.config and isinstance(self.config['debug2'], str):
+			self.test_path = self.config['debug2']
 		elif 'other_test' in self.config:
 			self.test_path = self.config['other_test']
 		if 'valid_as_test' in self.config:
@@ -190,6 +192,11 @@ class LMData(object):
 		if not self.unk in item_to_id:
 			item_to_id[self.unk] = len(item_to_id)
 			id_to_item[len(id_to_item)] = self.unk
+
+		# add <bos>: used for sentence-level batches, or
+		# for discourse-level models that are use for e.g. rescoring
+		item_to_id['<bos>'] = len(item_to_id)
+		id_to_item[len(id_to_item)] = '<bos>'
 
 		return item_to_id, id_to_item
 
@@ -581,7 +588,6 @@ class wordSentenceData(LMData):
 
 			self.len_data = len(words)*len(words[0])
 			self.len_sentence = len(words[0])
-			#self.data_array = np.array(words).reshape(self.len_data)
 			self.data_array = np.array(words).reshape(len(words), len(words[0]))
 
 
@@ -608,21 +614,12 @@ class wordSentenceData(LMData):
 				self.iterator += 1
 
 		else:
-			#x = self.data_array[elf.iterator: self.iterator + 1]
-			#y = self.data_array[self.iterator + 1 : self.iterator + 2]
-
-			#x = self.data_array[self.iterator % self.len_sentence, self.iterator: self.iterator + 1]
-			#y = self.data_array[self.iterator % self.len_sentence, self.iterator + 1 : self.iterator + 2]
 
 			x = self.data_array[self.sentence_iterator, self.iterator: self.iterator + 1]
 			y = self.data_array[self.sentence_iterator, self.iterator + 1 : self.iterator + 2]
 
 			# num_steps = 1 so no sequence length needed
 			seql = [1]
-
-			#if self.iterator >= self.len_data-1:
-			#	self.iterator = 0
-			#	self.end_reached = True
 
 			if self.sentence_iterator == self.len_data / self.len_sentence and self.iterator == self.len_sentence - 1:
 				self.end_reached = True
@@ -963,10 +960,10 @@ class charSentenceDataRescore(charSentenceData, wordSentenceDataRescore):
 		super(charSentenceDataRescore, self).__init__(config, eval_config, TRAIN, VALID, TEST)
 
 	def file_to_item_ids(self, filename):
-		return wordSentenceDataRescore.file_to_item_ids(filename)
+		return wordSentenceDataRescore.file_to_item_ids(self, filename)
 
 	def get_data(self):
-		return wordSentenceDataRescore.get_data()
+		return wordSentenceDataRescore.get_data(self)
 
 	"""def read_sentences(self, filename):
 		'''Returns a list with all sentences in filename, each sentence is split in words.'''
@@ -1018,12 +1015,11 @@ class charNGramData(LMData):
 			self.input_item_to_id = {}
 			self.input_id_to_item = {}
 
-		if 'big_data' in self.config:
-			self.iterator_subset = 0
-
 
 	def build_ngram_vocab(self, filename):
-		'''Returns a set of all character n-grams occurring in filename.'''
+		'''
+		Returns a set of all character n-grams occurring in filename.
+		'''
 
 		data = self.read_items(filename)
 
@@ -1094,8 +1090,7 @@ class charNGramData(LMData):
 		self.ngram_to_id = dict(zip(ngrams, range(len(ngrams))))
 		self.id_to_ngram = dict(zip(range(len(ngrams)), ngrams))
 
-		print('self.ngram_to_id: {0}'.format(self.ngram_to_id))
-		print('len self.ngram_to_id: {0}'.format(len(self.ngram_to_id)))
+		print('Size of n-gram vocabulary: {0}'.format(len(self.ngram_to_id)))
 
 		# special symbol to indicate whether the word contains (a) capital(s) or not
 		if 'capital' in self.config:
@@ -1456,9 +1451,6 @@ class charNGramData(LMData):
 		print('input_size: {0}'.format(input_size))
 		#print('size ngram_data array: {0}'.format(np.array(ngram_data).shape))
 
-		#if 'big_data' in self.config:
-		#	splitted_ngrams = np.split(np.array(ngram_data), 10)
-		#	splitted_ngrams[self.subset_iterator]
 
 		# for n-gram inputs: convert to numpy array: batch_size x batch_len x input_size
 		self.data_array_ngrams = np.array(ngram_data).reshape(batch_size, batch_len, input_size)
@@ -1513,3 +1505,4 @@ class charNGramData(LMData):
 		#	self.iterator += 1
 
 		return x, y, self.end_reached
+
