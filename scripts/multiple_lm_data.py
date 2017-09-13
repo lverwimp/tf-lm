@@ -120,3 +120,4 @@ class multipleLMDataChar(object):
 			all_x.append(x)
 
 		return all_x
+
