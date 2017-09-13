@@ -5,11 +5,26 @@ from __future__ import division
 
 import time, os, sys, random
 
+# Condor: adapt PYTHONPATH and LD_LIBRARY_PATH
+if 'PYTHONPATH' not in os.environ:
+	os.environ['PYTHONPATH'] = '/users/spraak/spch/prog/spch/tensorflow-1.1.0/lib/python2.7/site-packages'
+	if 'LD_LIBRARY_PATH' not in os.environ:
+		os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda-8.0/lib64:/users/spraak/spch/prog/spch/cudnn-5.1/cuda/lib64'
+	try:
+			os.system('/usr/bin/python ' + ' '.join(sys.argv))
+			sys.exit(0)
+	except Exception, exc:
+		print('failed executing')
+		sys.exit(1)
+
+
 import numpy as np
 import tensorflow as tf
 
 from writer import writer
 import configuration, lm_data, multiple_lm_data, trainer, lm, run_epoch
+
+print('TensorFlow version: {0}'.format(tf.__version__))
 
 # command line arguments
 flags = tf.flags
@@ -165,6 +180,9 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 
 	# word-level training, in batches (goes across sentence boundaries)
 	else:
+		if 'stream_data' in config:
+			raise NotImplementedError("Streaming data is only implemented for sentence-level batching.")
+
 		print('Word-level data, across sentence boundaries')
 		data = lm_data.LMData(config, eval_config, TRAIN, VALID, TEST)
 		all_data, vocab_size, _ = data.get_data()
@@ -376,8 +394,6 @@ def main(_):
 							if counter % 100 == 0:
 								print('{0} sentences processed'.format(counter))
 
-					print('Done rescoring.')
-
 				else:
 
 					tester = run_epoch.run_epoch(session, test_lm, data, test_data,
@@ -391,3 +407,4 @@ def main(_):
 
 if __name__ == "__main__":
 	tf.app.run()
+
