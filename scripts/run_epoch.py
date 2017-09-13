@@ -52,9 +52,6 @@ class run_epoch(object):
 			if end_reached:
 				break
 
-			#print('x: {0}'.format(x))
-			#print('x: {0}'.format(x.shape))
-
 			# testing: ignore padding symbols for sentence-level models
 			# (training: padding symbols are fed to the graph but ignored with seq_length)
 			if self.test and 'per_sentence' in self.model.config:
@@ -179,7 +176,11 @@ class run_epoch(object):
 		Creates a dictionary containing the data that will be fed to the placeholders of the model.
 		'''
 
-		if 'word_char_concat' in self.model.config:
+		if 'add_word' in self.model.config:
+			x_char_ngrams, x_words = x
+			feed_dict = {self.model.inputs: x_char_ngrams, self.model.input_words: x_words, self.model.targets: y}
+
+		elif 'word_char_concat' in self.model.config:
 			x_words, x_chars = x
 			feed_dict = {self.model.inputs: x_words, self.model.targets: y}
 			for pos in range(self.model.num_char):
@@ -292,12 +293,12 @@ class run_epoch(object):
 
 			print('')
 
-		if 'add_word' in self.model.config:
-			print('input_sample in words:', end='')
-			for row in word_input_sample:
-				for col in row:
-					print(u'{0} '.format(self.data_object.id_to_item[1][col]).encode('utf-8'), end="")
-				print('')
+		#if 'add_word' in self.model.config:
+		#	print('input_sample in words:', end='')
+		#	for row in word_input_sample:
+		#		for col in row:
+		#			print(u'{0} '.format(self.data_object.id_to_item[1][col]).encode('utf-8'), end="")
+		#		print('')
 
 		print('target_sample:', end="")
 		for row in target_sample:
@@ -524,6 +525,8 @@ class rescore(run_epoch):
 			if 'bidirectional' in self.model.config:
 				feed_dict[self.model.initial_state_bw[i]] = state_bw[i]
 
+		print('feed_dict: {0}'.format(feed_dict))
+
 		return feed_dict
 
 	def get_words(self, vals):
@@ -572,4 +575,3 @@ class rescore(run_epoch):
 		prob_next_word = np.log10(softmax[0][y[0][0]])
 
 		return prob_next_word
-
