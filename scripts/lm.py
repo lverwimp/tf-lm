@@ -57,11 +57,14 @@ class lm(object):
 		if 'per_sentence' in config:
 			self.seq_length = tf.placeholder(dtype=tf.int32, shape=[self.batch_size], name="sequence_lengths")
 
-			bool_mask = tf.sequence_mask(self.seq_length, self.num_steps)
-			float_mask = tf.cast(bool_mask, tf.float32)
-			self.final_mask = tf.reshape(float_mask, [self.batch_size*self.num_steps])
+			if 'bidirectional' in config:
+				length_mask = self.num_steps - 1
+			else:
+				length_mask = self.num_steps
 
-			print('final_mask: {0}'.format(self.final_mask))
+			bool_mask = tf.sequence_mask(self.seq_length, length_mask)
+			float_mask = tf.cast(bool_mask, tf.float32)
+			self.final_mask = tf.reshape(float_mask, [self.batch_size*length_mask])
 
 
 	def create_graph(self, is_training):
@@ -212,7 +215,9 @@ class lm(object):
 
 			self.loss = self.get_loss(output, is_training)
 
-			if 'per_sentence' in self.config:
+			# sentence-level batching: mask the loss for the padding
+			# no mask during testing since num_steps = 1 and batch_size = 1
+			if 'per_sentence' in self.config and self.num_steps > 1 and self.batch_size > 1:
 				self.masked_loss = tf.multiply(self.loss, self.final_mask)
 				self.unnormalized_loss = tf.reduce_sum(self.masked_loss, name="reduce_loss")
 				self.cost = self.unnormalized_loss / self.batch_size
@@ -509,3 +514,4 @@ class lm_charwordconcat(lm):
 			char_input = tf.nn.embedding_lookup(self.char_embedding, curr_char)
 
 			return char_input
+
