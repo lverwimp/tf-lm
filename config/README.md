@@ -77,12 +77,25 @@ Default = unidirectional.
 Default: input and output unit = word.
 
 * **char** (optional, True): by default, the data is read as words, but if this option is set to 'True', the model will train on character level (both input and output)
+
 * **char_ngram** (optional, integer): specify *n*, input consists of a vector with counts for all *n*-grams in the current word, output is still words
+
   * **ngram_cutoff** (optional, integer): to reduce the input vocabulary size, set a frequency cutoff for the character n-grams
+  
   * **capital** (optional, True): another option to reduce the input vocabulary: map all characters to lowercase and add a special symbol to mark the frequency of uppercase characters in the word
+  
+  * **add_word** (optional, True): if you want to feed a concatenation of character n-gram input and the word embedding to the LSTM
+  
+    * **word_size** (integer): size of the LSTM that should be assigned to the word embedding; the size assigned to character n-gram input is size - word_size
+    * **input_vocab_size** (integer): size of word input vocabulary
+    * **input_vocab** (optional, integer): size of word input vocab divided by 1000, in case you want to read the vocabulary from a dataset with a reduced vocabulary (e.g. train_1k-unk.txt)
+    
 * **word_char_concat** (optional, True): inputs consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word, outpt is still words. Used in combination with:
+
   * **num_char** (integer): number of characters to add (if the current word is shorter than *num_char*, padding symbols are used; if it is longer than *num_char*, only part of the characters in the word are added)
+  
   * **char_size** (integer): size assigned to each character embedding (size for the word embedding = *size* - *num_char* * *char_size*)
+  
   * **order** (string): 
     * *begin_first*: start adding characters from the beginning of the word (e.g. 4 characters from 'pineapple': p, i, n, e)
     * *end_first*: start adding characters from the end of the word (e.g. 4 characters from 'pineapple': e, l, p, p)
@@ -101,6 +114,9 @@ Default: each batch is of length *num_steps* and may contain multiple (parts of)
 # Testing options
 
 For all 3 options below: if set to 'True', the default test set will be evaluated, if a file is specified, that file will be evaluated.
+
+* **valid_as_test** (optional, True): calculate the validation perplexity in the 'testing mode': with a batch_size and num_steps of 1
+* **other_test** (optional, string): calculate the perplexity of a new dataset
 
 * **rescore** (optional, string): rescore a set of sentences/hypotheses and write their log probabilities to file
 
