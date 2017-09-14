@@ -84,9 +84,9 @@ Default: input and output unit = word.
   
   * **capital** (optional, True): another option to reduce the input vocabulary: map all characters to lowercase and add a special symbol to mark the frequency of uppercase characters in the word
   
-  * **add_word** (optional, True): if you want to feed a concatenation of character n-gram input and the word embedding to the LSTM
-  
   * **skipgram** (optional, integer): use skipgrams instead of n-grams, where the integer value of 'skipgram' specifies how many characters should be skipped
+  
+  * **add_word** (optional, True): if you want to feed a concatenation of character n-gram input and the word embedding to the LSTM
   
     * **word_size** (integer): size of the LSTM that should be assigned to the word embedding; the size assigned to character n-gram input is size - word_size
     * **input_vocab_size** (integer): size of word input vocabulary
