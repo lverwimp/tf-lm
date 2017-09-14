@@ -86,6 +86,8 @@ Default: input and output unit = word.
   
   * **add_word** (optional, True): if you want to feed a concatenation of character n-gram input and the word embedding to the LSTM
   
+  * **skipgram** (optional, integer): use skipgrams instead of n-grams, where the integer value of 'skipgram' specifies how many characters should be skipped
+  
     * **word_size** (integer): size of the LSTM that should be assigned to the word embedding; the size assigned to character n-gram input is size - word_size
     * **input_vocab_size** (integer): size of word input vocabulary
     * **input_vocab** (optional, integer): size of word input vocab divided by 1000, in case you want to read the vocabulary from a dataset with a reduced vocabulary (e.g. train_1k-unk.txt)
