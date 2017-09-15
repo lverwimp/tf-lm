@@ -1,4 +1,4 @@
-# tf-languagemodel
+# tf-lm
 **New version** of the scripts: different structure, more options + pre-trained language models.
 
 These scripts are compatible with TensorFlow **v1.1**. 
