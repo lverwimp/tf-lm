@@ -73,11 +73,11 @@ Other scripts:
 | Word | Discourse | Unidirectional | Predict next word(s) | --config ../config/en-ptb_word_sentence_predict.config
 | Word | Sentence | Unidirectional | Generate debug file | --config ../config/en-ptb_word_sentence_debug2.config
 | Word | Sentence | Bidirectional | Perplexity | --config ../config/en-ptb_word_sentence_bidir.config (--train False --valid False)
-| Character | Discourse | Unidirectional | Perplexity | --config en-ptb_char_discourse.config (--train False --valid False)
+| Character | Discourse | Unidirectional | Perplexity | --config ../config/en-ptb_char_discourse.config (--train False --valid False)
 | Character | Discourse | Unidirectional | Rescore |
 | Character | Discourse | Unidirectional | Predict next word(s) |
-| Word-Character | Discourse | Unidirectional | Perplexity |
-| Character n-gram | Discourse | Unidirectional | Perplexity |
+| Word-Character | Discourse | Unidirectional | Perplexity | --config ../config/en-ptb_wordchar9-invert_discourse.config (--train False --valid False)
+| Character n-gram | Discourse | Unidirectional | Perplexity | --config en-ptb_char2gram_discourse.config (--train False --valid False)
 
 
 
