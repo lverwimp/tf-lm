@@ -7,7 +7,9 @@ import functools, collections
 
 class lm(object):
 	'''
-	Standard LSTM Language Model.
+	Standard LSTM Language Model:
+	Predicting the next word given the previous words, or
+	predicting the next character given the previous characters.
 	'''
 
 	def __init__(self, config, is_training, reuse):
@@ -370,6 +372,10 @@ class lm(object):
 		return self._final_state_bw
 
 class lm_ngram(lm):
+	'''
+	LSTM that takes character n-grams + optionally word embeddings as input
+	and predicts a distribution over words in the output.
+	'''
 
 	def __init__(self, config, is_training, reuse):
 
@@ -442,6 +448,10 @@ class lm_ngram(lm):
 
 
 class lm_charwordconcat(lm):
+	'''
+	LSTM that takes the concatenation of word and character embeddings as input
+	and predicts a distribution over words in the output.
+	'''
 
 	def __init__(self, config, is_training, reuse):
 
@@ -514,4 +524,5 @@ class lm_charwordconcat(lm):
 			char_input = tf.nn.embedding_lookup(self.char_embedding, curr_char)
 
 			return char_input
+
 
