@@ -85,8 +85,15 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 	# word-level training, on sentence level (sentences are padded until maximum sentence length)
 	elif 'per_sentence' in config:
 
+		if 'char_ngram' in config:
+			raise NotImplementedError("Models with character n-gram input are only "
+				"implemented on discourse level.")
+		elif 'word_char_concat' in config:
+			raise NotImplementedError("Models with concatenated word and character embeddings "
+				"as input are only implemented at discourse level.")
+
 		# do not read all data at once (for large datasets/small memory)
-		if 'stream_data' in config:
+		elif 'stream_data' in config:
 			print('Sentence-level data, stream data instead or reading all at once')
 
 			data = lm_data.wordSentenceDataStream(config, eval_config, TRAIN, VALID, TEST)
@@ -128,9 +135,16 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 			max_length_f.close()
 
 	# rescoring with non-sentence-level LMs: prepare data sentence-level
-	# except when it is explcitily specified not to (across_sentence)
+	# except when it is explicitily specified not to (across_sentence)
 	elif ('rescore' in config or 'debug2' in config or 'predict_next' in config) and not 'across_sentence' in config:
 		print('Data for rescoring (not on sentence level trained), for generating debugging file or for predicting next word')
+
+		if 'char_ngram' in config:
+			raise NotImplementedError('Rescoring/generating a debug file/predicting the next word is '
+				'not (yet) implemented for models with character n-grams as input.')
+		elif 'word_char_concat' in config:
+			raise NotImplementedError('Rescoring/generating a debug file/predicting the next word is '
+				'not (yet) implemented for models with concatenated word and character embeddings as input.')
 
 		if 'debug2' in config and not TEST:
 			config['valid_as_test'] = True
