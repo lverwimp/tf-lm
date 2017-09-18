@@ -525,8 +525,6 @@ class rescore(run_epoch):
 			if 'bidirectional' in self.model.config:
 				feed_dict[self.model.initial_state_bw[i]] = state_bw[i]
 
-		print('feed_dict: {0}'.format(feed_dict))
-
 		return feed_dict
 
 	def get_words(self, vals):
