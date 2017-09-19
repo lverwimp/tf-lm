@@ -83,11 +83,17 @@ Other scripts:
 
 # Example commands
 
-For these examples, you can download the [Penn Treebank](https://catalog.ldc.upenn.edu/ldc99t42), [WikiText](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
+For these examples, you can download the [Penn TreeBank](https://catalog.ldc.upenn.edu/ldc99t42), [WikiText](https://www.salesforce.com/products/einstein/ai-research/the-wikitext-dependency-language-modeling-dataset/) or use you own dataset. The data should be divided in a train.txt, valid.txt and test.txt and the correct data path should be specified in the configuration file ('data_path').
 
 Train and evaluate a word-level language model on Penn Treebank:
 
 python main.py --config ../config/en-ptb_word_discourse.config
+
+# Pre-trained models
+
+We release models pre-trained on Penn TreeBank, WikiText, the Corpus of Spoken Dutch and a corpus of Dutch subtitles. 
+
+This work is still in progress, but the models can be found [here](http://homes.esat.kuleuven.be/~lverwimp/lstm_lm/).
 
 # Contact
 
