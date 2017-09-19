@@ -8,8 +8,6 @@ prefix = str(sys.argv[2]) # prefix for data file with characters
 it = int(sys.argv[3]) # position in the word that should be written to file, starting from 0
 invert = str(sys.argv[4]) # 'normal' or 'invert': order of the characters
 
-print('invert: {0}'.format(invert))
-
 if invert != 'normal' and invert != 'invert':
 	raise IOError("Specify in which order the characters should be added (4th argument): \
 		starting from the beginning of the word ('normal') or from the ending of the \
