@@ -95,6 +95,13 @@ We release models pre-trained on Penn TreeBank, WikiText, the Corpus of Spoken D
 
 This work is still in progress, but the models can be found [here](http://homes.esat.kuleuven.be/~lverwimp/lstm_lm/).
 
+The config files used for the models are:
+* [PTB discourse](config/en-ptb_word_discourse.config)
+* PTB sentence: config/en-ptb_word_sentence.config
+* Wiki discourse: config/en-wiki_word_discourse.config
+* Wiki sentence: config/en-wiki_word_sentence.config
+* CGN sentence: config/nl-cgn_word_sentence.config
+
 # Contact
 
 If you have any questions, mail to lyan.verwimp [at] esat.kuleuven.be.
