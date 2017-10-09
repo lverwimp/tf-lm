@@ -205,6 +205,10 @@ class run_epoch(object):
 
 
 	def init_batching(self):
+		'''
+		Initialize batching.
+		'''
+
 		if self.test:
 			if 'per_sentence' in self.model.config:
 				if 'stream_data' in self.model.config:
@@ -231,6 +235,18 @@ class run_epoch(object):
 				self.data_object.init_batching(self.data_set)
 
 	def get_batch(self, data_file):
+		'''
+		Get a single batch.
+		Arguments:
+			data_file: in case of streaming data, data_file is the file from
+				which the data is read; otherwise it is None
+		Returns:
+			x: input
+			y: target
+			end_reached: boolean indicating whether the end of the file is reached or not
+			seq_lengths: length of every sentence for sentence-level batching; otherwise, empty list
+		'''
+
 		seq_lengths = []
 		if self.test:
 			if 'per_sentence' in self.model.config or 'char_rnn' in self.model.config:
@@ -293,13 +309,6 @@ class run_epoch(object):
 
 			print('')
 
-		#if 'add_word' in self.model.config:
-		#	print('input_sample in words:', end='')
-		#	for row in word_input_sample:
-		#		for col in row:
-		#			print(u'{0} '.format(self.data_object.id_to_item[1][col]).encode('utf-8'), end="")
-		#		print('')
-
 		print('target_sample:', end="")
 		for row in target_sample:
 			for col in row:
@@ -312,7 +321,9 @@ class run_epoch(object):
 			print('')
 
 class rescore(run_epoch):
-	'''Get probabilities per sentence, from a sentence-level LM.'''
+	'''
+	Used for re-scoring hypotheses, generating next word(s) or generating debug file.
+	'''
 
 	def __init__(self, session, model, data_object, data_set, eval_op=None, test=False):
 
@@ -324,7 +335,7 @@ class rescore(run_epoch):
 			pass
 
 		try:
-			self.results_f = open(self.model.config['result'], 'w', 0)
+			self.results_f = codecs.open(self.model.config['result'], 'w', self.encoding, 0)
 		except IOError:
 			print('Failed opening results file {0}'.format(self.model.config['result']))
 			sys.exit(1)
@@ -354,9 +365,9 @@ class rescore(run_epoch):
 
 			# format data
 			if 'predict_next' in self.model.config and self.print_predictions:
-				x, y, counter, hypothesis = self.format_data(hypothesis, counter, predicted_word)
+				x, y, hypothesis = self.format_data(hypothesis, counter, predicted_word)
 			else:
-				x, y, counter, hypothesis = self.format_data(hypothesis, counter)
+				x, y, hypothesis = self.format_data(hypothesis, counter)
 
 			if 'predict_next' in self.model.config:
 				input_word = self.data_object.id_to_item[x[0][0]]
@@ -385,7 +396,7 @@ class rescore(run_epoch):
 			if 'punct' in self.model.config:
 				next_word, next_word_orig = next_word
 
-			prob_next_word = self.get_prob_next_word(vals, softmax, y, next_word)
+			prob_next_word = self.get_prob_next_word(softmax, y)
 
 			# debugging: print every sample (input + target) that is fed to the model
 			if PRINT_SAMPLES:
@@ -471,6 +482,18 @@ class rescore(run_epoch):
 			counter += 1
 
 	def format_data(self, hypothesis, counter, predicted_word=None):
+		'''
+		Retrieve current input and target from the input hypothesis.
+		Arguments:
+			hypothesis: current input hypothesis
+			counter: current position in the hypothesis
+			predicted_word: if we are predicting the next word(s),
+				the predicted word is added to the input
+		Returns:
+			x: current input
+			y: current target
+			hypothesis: current input hypothesis, possibly updated with predicted_word
+		'''
 
 		# add predicted word to the input
 		if 'predict_next' in self.model.config and predicted_word != None:
@@ -485,9 +508,12 @@ class rescore(run_epoch):
 			y = np.array(hypothesis[counter+1]).reshape((1,1))
 
 
-		return x, y, counter, hypothesis
+		return x, y, hypothesis
 
 	def create_fetches(self):
+		'''
+		Creates a dictionary containing model variables for which we want the new values.
+		'''
 
 		fetches = {
 			"final_state": self.model.final_state, # c and h of previous time step (for each hidden layer)
@@ -508,6 +534,9 @@ class rescore(run_epoch):
 		return fetches
 
 	def create_feed_dict(self, x, y, state):
+		'''
+		Creates a dictionary containing the data that will be fed to the placeholders of the model.
+		'''
 
 		if 'add_word' in self.model.config:
 			feed_dict = {self.model.inputs: x[0], self.model.input_words: x[1], self.model.targets: y}
@@ -528,6 +557,15 @@ class rescore(run_epoch):
 		return feed_dict
 
 	def get_words(self, vals):
+		'''
+		Retrieve current input and target word.
+		Argument:
+			vals: result of running the graph
+		Returns:
+			current_word: string or list of strings of the current input word
+			next_word: string or list of strings of the current target word
+		'''
+
 		# get current word: list for bidirectional model, otherwise string
 		if 'bidirectional' in self.model.config:
 			current_word = []
@@ -568,7 +606,15 @@ class rescore(run_epoch):
 
 		return current_word, next_word
 
-	def get_prob_next_word(self, vals, softmax, y, next_word):
+	def get_prob_next_word(self, softmax, y):
+		'''
+		Retrieve probability that the model assigned to the target word.
+		Arguments:
+			softmax: softmax after feeding the current data to the network
+			y: current target word
+		Returns:
+			prob_next_word: log probability of the current target word
+		'''
 
 		prob_next_word = np.log10(softmax[0][y[0][0]])
 
