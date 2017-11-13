@@ -91,8 +91,6 @@ python main.py --config ../config/en-ptb_word_discourse.config
 
 # Pre-trained models
 
-!!! Apparently saving TensorFlow models with an absolute path causes portability problems. We are currently re-training all models and hope to release the correct versions soon.
-
 We release models pre-trained on Penn TreeBank, WikiText, the Corpus of Spoken Dutch and a corpus of Dutch subtitles. 
 
 This work is still in progress, but the models can be found [here](http://homes.esat.kuleuven.be/~lverwimp/lstm_lm/).
