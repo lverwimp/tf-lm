@@ -524,5 +524,3 @@ class lm_charwordconcat(lm):
 			char_input = tf.nn.embedding_lookup(self.char_embedding, curr_char)
 
 			return char_input
-
-
