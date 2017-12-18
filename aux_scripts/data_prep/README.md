@@ -1,7 +1,8 @@
 # Data preparation scripts
 
 These scripts can be used to prepare your data.
-!! Some of them require [SRILM] (http://www.speech.sri.com/projects/srilm/).
+
+!! Some of them require [SRILM](http://www.speech.sri.com/projects/srilm/).
 
 * make_vocab_ids.sh: creates a vocabulary file with words and indices
 	* Ex: ./make_vocab_ids.sh "training_text" "size_of_vocabulary" "vocabulary_name"
