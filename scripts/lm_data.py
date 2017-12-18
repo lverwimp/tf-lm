@@ -18,12 +18,12 @@ def flattern(A):
 		else: rt.append(i)
 	return rt
 
-def save_item_to_id(item_to_id, file):
+def save_item_to_id(item_to_id, file, encoding):
 	'''
 	Saves a item_to_id mapping to file.
 	'''
 
-	out = codecs.open(file, 'w', self.encoding)
+	out = codecs.open(file, 'w', encoding)
 	for item, id_ in item_to_id.iteritems():
 		if item == '':
 			print('EMPTY ELEMENT')
@@ -32,7 +32,7 @@ def save_item_to_id(item_to_id, file):
 		out.write(u'{0}\t{1}\n'.format(item, id_).encode('utf-8'))
 	out.close()
 
-def load_item_to_id(file):
+def load_item_to_id(file, encoding):
 	'''
 	Loads an item_to_id mapping and corresponding id_to_item mapping from file.
 	'''
@@ -40,7 +40,7 @@ def load_item_to_id(file):
 	item_to_id = {}
 	id_to_item = {}
 
-	for line in codecs.open(file, 'r', self.encoding):
+	for line in codecs.open(file, 'r', encoding):
 		l = line.strip().split()
 		item_to_id[l[0]] = l[1]
 		id_to_item[l[1]] = l[0]
@@ -293,7 +293,7 @@ class LMData(object):
 
 		if 'read_vocab_from_file' in self.config:
 			# read vocabulary mapping from file
-			self.item_to_id, self.id_to_item = load_item_to_id(self.config['read_vocab_from_file'])
+			self.item_to_id, self.id_to_item = load_item_to_id(self.config['read_vocab_from_file'], self.encoding)
 
 			# check whether the data file contains words that are not yet in the vocabulary mapping
 			self.extend_vocab(self.train_path)
@@ -313,7 +313,7 @@ class LMData(object):
 
 			# save the item_to_id mapping such that it can be re-used
 			if 'save_dict' in self.config:
-				save_item_to_id(self.item_to_id, '{0}.dict'.format(self.config['save_dict']))
+				save_item_to_id(self.item_to_id, '{0}.dict'.format(self.config['save_dict']), self.encoding)
 
 
 		# list of all words in training data converted to their ids
@@ -736,7 +736,7 @@ class wordSentenceDataStream(wordSentenceData):
 
 		if 'read_vocab_from_file' in self.config:
 			# read vocabulary mapping and maximum sentence length from file
-			self.item_to_id, self.id_to_item = load_item_to_id(self.config['read_vocab_from_file'])
+			self.item_to_id, self.id_to_item = load_item_to_id(self.config['read_vocab_from_file'], self.encoding)
 
 			if len(self.item_to_id) != self.config['vocab_size']:
 				raise IOError("The vocabulary size specified by 'vocab_size' ({0}) does not correspond \
