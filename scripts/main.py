@@ -61,9 +61,6 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 
 			config['num_steps'] = total_length
 
-			if not 'rescore' in config and not 'predict_next' in config:
-				eval_config['num_steps'] = total_length
-
 			# write maximum sentence length to file
 			max_length_f = open('{0}max_length'.format(config['save_path']), 'w')
 			max_length_f.write('{0}\n'.format(total_length))
@@ -408,4 +405,3 @@ def main(_):
 
 if __name__ == "__main__":
 	tf.app.run()
-
