@@ -11,6 +11,6 @@ These scripts can be used to prepare your data.
 * reduce_vocab.sh: construct vocabulary + map words not in vocabulary to unk-token
 	* Ex: ./reduce_vocab.sh "vocabulary_size" "training_text" "validation_text"
 	* If you also have test set besides a validation set, you can uncomment the lines concerning the test set
-	* The default unk-token is <unk>; this can changed in the script
+	* The default unk-token is \<unk\>; this can changed in the script
 * split_data.sh
 
