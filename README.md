@@ -61,7 +61,7 @@ Other scripts:
 * writer.py: for writing to multiple output streams
 
 Auxiliary scripts:
-* data_prep: several data preparation scripts, see the [readme](./aux_scripts/README.md).
+* data_prep: several data preparation scripts, see the [readme](./aux_scripts/data_prep/README.md).
 * make_char_feat_files.py: to create character feature files used for the models described in [1].
 
 # Possible combinations
