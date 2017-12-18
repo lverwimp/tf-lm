@@ -1,16 +1,16 @@
 # tf-lm
-**New version** of the scripts: different structure, more options + pre-trained language models.
+This repository contains scripts for recurrent neural network language modeling with TensorFlow, and a link to pre-trained language models on several benchmarks.
 
-These scripts are compatible with TensorFlow **v1.1**. 
-
-This repository contains scripts for recurrent neural network language modeling with TensorFlow.
+These scripts are compatible with TensorFlow **v1.4**. 
 
 !!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
+
+Last update (18th December 2017): added data preparation scripts.
 
 # Installation and setup
 
 * Python version used: 2.7.5. 
-* Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.1.
+* Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.4.
 * Modify the config files in config/: change the pathnames and optionally the parameters.
 * Modify the log directory in main.py (LOG_DIR=...).
 
@@ -59,6 +59,10 @@ Other scripts:
 * run_epoch.py: calls lm_data to get batches of data, feeds the batches to the language model and calculates the probability/perplexity
 * trainer.py: classes for training the model
 * writer.py: for writing to multiple output streams
+
+Auxiliary scripts:
+* data_prep: several data preparation scripts, see the [readme](./aux_scripts/README.md).
+* make_char_feat_files.py: to create character feature files used for the models described in [1].
 
 # Possible combinations
 
