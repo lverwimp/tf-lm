@@ -125,7 +125,8 @@ For all 3 options below: if set to 'True', the default test set will be evaluate
 * **debug2** (optional, string): generate a file similar to the output of SRILM's -debug 2 option, that can be used for calculating interpolation weights
 
 * **predict_next** (optional, string): generate the most likely sequence for every prefix in a given file
-  * **max_num_predictions** (integer): generate only *max_num_predictions* (default = until <eos> is predicted or until 100 words are generated)
+  * **max_num_predictions** (optional, integer): generate only *max_num_predictions* (default = until <eos> is predicted or until 100 words are generated)
+  * **sample_multinomial** (optional, True): do not generate the most likely sequence, but sample from a multinomial distribution specified by the softmax
 
 All 3 options should be combined with:
 * **result** (optional, string): results file
