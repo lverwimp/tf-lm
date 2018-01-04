@@ -3,8 +3,7 @@
 from __future__ import print_function
 import tensorflow as tf
 import numpy as np
-import math, os, sys
-import time
+import math, os, sys, time, io
 
 PRINT_SAMPLES = False # if PRINT_SAMPLES is True, all input and target batches are printed
 PRINT_INTERMEDIATE = True # if PRINT_INTERMEDIATE is True, ppl and time after every 100 batches are printed
@@ -57,11 +56,11 @@ class run_epoch(object):
 			if self.test and 'per_sentence' in self.model.config:
 				if 'word_char_concat' in self.model.config:
 					# self.data_object = tuple of LMData and multipleLMDataChar, x = tuple of word and characters
-					if self.data_object[0].id_to_item[x[0][0][0]] == self.data_object[0].PADDING_SYMBOL and \
+					if self.data_object[0].id_to_item[x[0][0][0]] == self.data_object[0].PADDING_SYMBOL or \
 							self.data_object[0].id_to_item[y[0][0][0]] == self.data_object[0].PADDING_SYMBOL:
 						continue
 				else:
-					if self.data_object.id_to_item[x[0][0]] == self.data_object.PADDING_SYMBOL and \
+					if self.data_object.id_to_item[x[0][0]] == self.data_object.PADDING_SYMBOL or \
 							self.data_object.id_to_item[y[0][0]] == self.data_object.PADDING_SYMBOL:
 						continue
 
@@ -248,31 +247,22 @@ class run_epoch(object):
 		'''
 
 		seq_lengths = []
-		if self.test:
-			if 'per_sentence' in self.model.config or 'char_rnn' in self.model.config:
-				if 'stream_data' in self.model.config:
-					x, y, end_reached, seq_lengths = self.data_object.get_batch(data_file, self.test)
-				else:
-					x, y, end_reached, seq_lengths = self.data_object.get_batch()
+		if 'per_sentence' in self.model.config or 'char_rnn' in self.model.config:
+			if 'stream_data' in self.model.config:
+				x, y, end_reached, seq_lengths = self.data_object.get_batch(data_file, self.test)
+			else:
+				x, y, end_reached, seq_lengths = self.data_object.get_batch()
 
-			elif 'word_char_concat' in self.model.config:
-				x_words, y, end_reached = self.data_object[0].get_batch()
-				x_chars = self.data_object[1].get_batch()
-				x = (x_words, x_chars)
-			else:
-				x, y, end_reached = self.data_object.get_batch()
+		elif 'word_char_concat' in self.model.config:
+			x_words, y, end_reached = self.data_object[0].get_batch()
+			x_chars = self.data_object[1].get_batch()
+			x = (x_words, x_chars)
+
+		elif 'read_chunks' in self.model.config:
+			x, y, end_reached = self.data_object.get_batch(self.test)
+
 		else:
-			if 'per_sentence' in self.model.config or 'char_rnn' in self.model.config:
-				if 'stream_data' in self.model.config:
-					x, y, end_reached, seq_lengths = self.data_object.get_batch(data_file)
-				else:
-					x, y, end_reached, seq_lengths = self.data_object.get_batch()
-			elif 'word_char_concat' in self.model.config:
-				x_words, y, end_reached = self.data_object[0].get_batch()
-				x_chars = self.data_object[1].get_batch()
-				x = (x_words, x_chars)
-			else:
-				x, y, end_reached = self.data_object.get_batch()
+			x, y, end_reached = self.data_object.get_batch()
 
 		return x, y, end_reached, seq_lengths
 
@@ -335,7 +325,8 @@ class rescore(run_epoch):
 			pass
 
 		try:
-			self.results_f = codecs.open(self.model.config['result'], 'w', self.encoding, 0)
+			self.results_f = io.open(self.model.config['result'], 'w',
+				buffering=1, encoding=self.data_object.encoding)
 		except IOError:
 			print('Failed opening results file {0}'.format(self.model.config['result']))
 			sys.exit(1)
@@ -379,9 +370,21 @@ class rescore(run_epoch):
 						input_word != '<bos>':
 					if 'char' in self.model.config:
 						# no space
-						self.results_f.write('{0}'.format(input_word))
+						self.results_f.write(u'{0}'.format(input_word))
 					else:
-						self.results_f.write('{0} '.format(input_word))
+						self.results_f.write(u'{0} '.format(input_word))
+
+			# testing: ignore padding symbols for sentence-level models
+			if 'per_sentence' in self.model.config:
+				if 'word_char_concat' in self.model.config:
+					# self.data_object = tuple of LMData and multipleLMDataChar, x = tuple of word and characters
+					if self.data_object[0].id_to_item[x[0][0][0]] == self.data_object[0].PADDING_SYMBOL or \
+							self.data_object[0].id_to_item[y[0][0][0]] == self.data_object[0].PADDING_SYMBOL:
+						continue
+				else:
+					if self.data_object.id_to_item[x[0][0]] == self.data_object.PADDING_SYMBOL or \
+							self.data_object.id_to_item[y[0][0]] == self.data_object.PADDING_SYMBOL:
+						continue
 
 			# create feed_dict
 			feed_dict = self.create_feed_dict(x, y, state)
@@ -419,7 +422,7 @@ class rescore(run_epoch):
 					current_word = '<s>'
 
 				# only the p( next_word | current_word ) = ... lines are needed
-				self.results_f.write('\tp( {0} | {1} )\t= [3gram] {2} [ {3} ]\n'.format(
+				self.results_f.write(u'\tp( {0} | {1} )\t= [3gram] {2} [ {3} ]\n'.format(
 					next_word, current_word, prob_next_word, log_prob_next_word))
 
 				if next_word == '</s>' or counter >= len(hypothesis)-2:
@@ -439,30 +442,37 @@ class rescore(run_epoch):
 
 							index_predicted_word = np.argmax(softmax[i])
 
-							print('predicted_word (1): {0}'.format(self.data_object.id_to_item[index_predicted_word]))
-
-
 						# processes hypothesis all at once: break out of while-loop
-						self.results_f.write('\n')
+						self.results_f.write(u'\n')
 						break
 
 					else:
-
 						index_predicted_word = np.argmax(softmax[0])
 
 						# word dictionary
 						predicted_word = self.data_object.id_to_item[index_predicted_word]
 
+						if 'sample_multinomial' in self.model.config:
+							# softmax is float32 --> cast to float64 and renormalize to make sure
+							# the multinomial function doesn't give a valueerror because the probs do not sum to 1
+							normalized_softmax = np.divide(softmax[0].ravel().astype(np.float64), np.sum(softmax[0].ravel().astype(np.float64)))
+							# draw a sample according to the multinomial distribution
+							sampled = np.argmax(np.random.multinomial(1, normalized_softmax))
+							predicted_word = self.data_object.id_to_item[sampled]
+
+
 						if predicted_word == '<eos>' or \
 								('max_num_predictions' in self.model.config and self.num_predictions >= self.model.config['max_num_predictions']) or \
 								self.num_predictions >= 100:
-							self.results_f.write('\n')
+							self.results_f.write(u'\n')
 							break
 						else:
 							if 'char' in self.model.config:
-								self.results_f.write('{0}'.format(predicted_word))
+								self.results_f.write(u'{0}'.format(predicted_word))
 							else:
-								self.results_f.write('{0} '.format(predicted_word))
+								#for el in np.nditer(idx_five_most_likely):
+								#	self.results_f.write(u'{0} / '.format(self.data_object.id_to_item[int(el)]))
+								self.results_f.write(u'{0} '.format(predicted_word))
 
 					self.num_predictions += 1
 
@@ -472,7 +482,7 @@ class rescore(run_epoch):
 				if next_word == '<eos>' or current_word == '<eos>':
 					total_log_prob += prob_next_word
 
-					self.results_f.write('{0}\n'.format(total_log_prob))
+					self.results_f.write(u'{0}\n'.format(total_log_prob))
 					break
 
 				else:
