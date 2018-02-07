@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-import time, os, sys, random
+import time, os, sys, random, io
 
 import numpy as np
 import tensorflow as tf
@@ -62,8 +62,8 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 			config['num_steps'] = total_length
 
 			# write maximum sentence length to file
-			max_length_f = open('{0}max_length'.format(config['save_path']), 'w')
-			max_length_f.write('{0}\n'.format(total_length))
+			max_length_f = io.open('{0}max_length'.format(config['save_path']), 'w')
+			max_length_f.write(u'{0}\n'.format(total_length))
 			max_length_f.close()
 
 		elif 'rescore' in config or 'predict_next' in config:
@@ -104,8 +104,8 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 				eval_config['num_steps'] = total_length
 
 			# write maximum sentence length to file
-			max_length_f = open('{0}max_length'.format(config['save_path']), 'w')
-			max_length_f.write('{0}\n'.format(total_length))
+			max_length_f = io.open('{0}max_length'.format(config['save_path']), 'w')
+			max_length_f.write(u'{0}\n'.format(total_length))
 			max_length_f.close()
 
 		else:
@@ -127,9 +127,25 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 			print('Write max length of sentence to {0}max_length'.format(config['save_path']))
 
 			# write maximum sentence length to file
-			max_length_f = open('{0}max_length'.format(config['save_path']), 'w')
-			max_length_f.write('{0}\n'.format(total_length))
+			max_length_f = io.open('{0}max_length'.format(config['save_path']), 'w')
+			max_length_f.write(u'{0}\n'.format(total_length))
 			max_length_f.close()
+
+	elif 'predict_next' in config and 'interactive' in config:
+
+		print('Type a seed word or sentence:')
+		seed = raw_input()
+		print('Start generating text for the seed "{0}"...'.format(seed))
+
+		# write seed to temporary file
+		out = io.open('tmp','w')
+		out.write(u'{0}'.format(seed))
+		out.close()
+
+		config['predict_next'] = 'tmp'
+
+		data = lm_data.wordSentenceDataRescore(config, eval_config, TRAIN, VALID, TEST)
+		all_data, vocab_size, _ = data.get_data()
 
 	# rescoring with non-sentence-level LMs: prepare data sentence-level
 	# except when it is explicitily specified not to (across_sentence)
@@ -174,7 +190,6 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 		# input_size = size of character n-gram vocabulary
 		config['input_size'] = input_size
 		eval_config['input_size'] = input_size
-
 
 	# word-level training, in batches (goes across sentence boundaries)
 	else:
