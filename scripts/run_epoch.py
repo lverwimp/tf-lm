@@ -56,12 +56,12 @@ class run_epoch(object):
 			if self.test and 'per_sentence' in self.model.config:
 				if 'word_char_concat' in self.model.config:
 					# self.data_object = tuple of LMData and multipleLMDataChar, x = tuple of word and characters
-					if self.data_object[0].id_to_item[x[0][0][0]] == self.data_object[0].PADDING_SYMBOL or \
-							self.data_object[0].id_to_item[y[0][0][0]] == self.data_object[0].PADDING_SYMBOL:
+					if self.data_object[0].id_to_item[int(x[0][0][0])] == self.data_object[0].PADDING_SYMBOL or \
+							self.data_object[0].id_to_item[int(y[0][0][0])] == self.data_object[0].PADDING_SYMBOL:
 						continue
 				else:
-					if self.data_object.id_to_item[x[0][0]] == self.data_object.PADDING_SYMBOL or \
-							self.data_object.id_to_item[y[0][0]] == self.data_object.PADDING_SYMBOL:
+					if self.data_object.id_to_item[int(x[0][0])] == self.data_object.PADDING_SYMBOL or \
+							self.data_object.id_to_item[int(y[0][0])] == self.data_object.PADDING_SYMBOL:
 						continue
 
 			# create feed_dict = what we feed into the graph
@@ -78,10 +78,11 @@ class run_epoch(object):
 			# determine new state: emtpy state or state of previous time step
 			state = self.get_new_state(vals)
 
-			if 'per_sentence' in self.model.config and not self.test:
+			if 'per_sentence' in self.model.config and (self.model.num_steps > 1 or self.model.batch_size > 1):
 				costs += vals["unnormalized_loss"]
 				iters += np.sum(seq_lengths)
 			else:
+				# cost = -ln(prob_target_word) / batch_size
 				costs += vals["cost"]
 				iters += self.model.num_steps
 
@@ -155,7 +156,7 @@ class run_epoch(object):
 			"cost": self.model.cost,
 			"final_state": self.model.final_state, # c and h of previous time step (for each hidden layer)
 			"input_sample": self.model.input_sample,
-			"target_sample": self.model.target_sample
+			"target_sample": self.model.target_sample,
 			}
 
 		# _train_op in training phase
@@ -165,7 +166,7 @@ class run_epoch(object):
 		if 'bidirectional' in self.model.config:
 			fetches["final_state_bw"] = self.model.final_state_bw
 
-		if 'per_sentence' in self.model.config and self.model.config['num_steps'] > 1 and self.model.config['batch_size'] > 1 :
+		if 'per_sentence' in self.model.config and (self.model.num_steps > 1 or self.model.batch_size > 1):
 			fetches["unnormalized_loss"] = self.model.unnormalized_loss
 
 		return fetches
@@ -257,9 +258,6 @@ class run_epoch(object):
 			x_words, y, end_reached = self.data_object[0].get_batch()
 			x_chars = self.data_object[1].get_batch()
 			x = (x_words, x_chars)
-
-		elif 'read_chunks' in self.model.config:
-			x, y, end_reached = self.data_object.get_batch(self.test)
 
 		else:
 			x, y, end_reached = self.data_object.get_batch()
@@ -372,6 +370,12 @@ class rescore(run_epoch):
 						# no space
 						self.results_f.write(u'{0}'.format(input_word))
 					else:
+						if 'interactive' in self.model.config:
+							if input_word == '<eos>':
+								print('')
+							else:
+								print(u'{0} '.format(input_word).encode('utf-8'), end='')
+
 						self.results_f.write(u'{0} '.format(input_word))
 
 			# testing: ignore padding symbols for sentence-level models
@@ -459,19 +463,29 @@ class rescore(run_epoch):
 							# draw a sample according to the multinomial distribution
 							sampled = np.argmax(np.random.multinomial(1, normalized_softmax))
 							predicted_word = self.data_object.id_to_item[sampled]
+							while predicted_word == self.data_object.unk:
+								sampled = np.argmax(np.random.multinomial(1, normalized_softmax))
+								predicted_word = self.data_object.id_to_item[sampled]
 
 
-						if predicted_word == '<eos>' or \
-								('max_num_predictions' in self.model.config and self.num_predictions >= self.model.config['max_num_predictions']) or \
-								self.num_predictions >= 100:
+						if 'max_num_predictions' in self.model.config and self.num_predictions >= self.model.config['max_num_predictions']:
+							self.results_f.write(u'\n')
+							break
+						elif not 'max_num_predictions' in self.model.config and self.num_predictions >= 100:
+							self.results_f.write(u'\n')
+							break
+						elif not 'predict_mult_sentences' in self.model.config and predicted_word == '<eos>':
 							self.results_f.write(u'\n')
 							break
 						else:
 							if 'char' in self.model.config:
 								self.results_f.write(u'{0}'.format(predicted_word))
 							else:
-								#for el in np.nditer(idx_five_most_likely):
-								#	self.results_f.write(u'{0} / '.format(self.data_object.id_to_item[int(el)]))
+								if 'interactive' in self.model.config:
+									if predicted_word == '<eos>':
+										print('')
+									else:
+										print(u'{0} '.format(predicted_word).encode('utf-8'), end='')
 								self.results_f.write(u'{0} '.format(predicted_word))
 
 					self.num_predictions += 1
