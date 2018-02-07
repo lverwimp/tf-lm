@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import tensorflow as tf
-import os, collections, sys, subprocess, codecs
+import os, collections, sys, subprocess, io
 from abc import abstractmethod
 import numpy as np
 
@@ -22,14 +22,13 @@ def save_item_to_id(item_to_id, file, encoding):
 	'''
 	Saves a item_to_id mapping to file.
 	'''
-
-	out = codecs.open(file, 'w', encoding)
+	out = io.open(file, 'w', encoding=encoding)
 	for item, id_ in item_to_id.iteritems():
 		if item == '':
 			print('EMPTY ELEMENT')
 		if item == ' ':
 			print('SPACE')
-		out.write(u'{0}\t{1}\n'.format(item, id_).encode('utf-8'))
+		out.write(u'{0}\t{1}\n'.format(item, id_))
 	out.close()
 
 def load_item_to_id(file, encoding):
@@ -40,10 +39,10 @@ def load_item_to_id(file, encoding):
 	item_to_id = {}
 	id_to_item = {}
 
-	for line in codecs.open(file, 'r', encoding):
+	for line in io.open(file, 'r', encoding=encoding):
 		l = line.strip().split()
-		item_to_id[l[0]] = l[1]
-		id_to_item[l[1]] = l[0]
+		item_to_id[l[0]] = int(l[1])
+		id_to_item[int(l[1])] = l[0]
 
 	return item_to_id, id_to_item
 
@@ -290,7 +289,6 @@ class LMData(object):
 		Returns:
 			all_data: tuple of three lists : train_data, valid_data and test_data
 		'''
-
 		if 'read_vocab_from_file' in self.config:
 			# read vocabulary mapping from file
 			self.item_to_id, self.id_to_item = load_item_to_id(self.config['read_vocab_from_file'], self.encoding)
@@ -298,10 +296,8 @@ class LMData(object):
 			# check whether the data file contains words that are not yet in the vocabulary mapping
 			self.extend_vocab(self.train_path)
 
-			if len(self.item_to_id) != self.config['vocab_size']:
-				raise IOError("The vocabulary size specified by 'vocab_size' ({0}) does not correspond \
-						to the size of the vocabulary file given ({1}).".format(
-						self.config['vocab_size'], len(self.item_to_id)))
+			if 'per_sentence' in self.config:
+				self.add_padding_symbol()
 
 		else:
 			# if the vocabulary mapping is not saved on disk, make one based on the training data
@@ -314,7 +310,6 @@ class LMData(object):
 			# save the item_to_id mapping such that it can be re-used
 			if 'save_dict' in self.config:
 				save_item_to_id(self.item_to_id, '{0}.dict'.format(self.config['save_dict']), self.encoding)
-
 
 		# list of all words in training data converted to their ids
 		if self.TRAIN:
@@ -399,7 +394,6 @@ class LMData(object):
 			self.iterator += 1
 
 		return x, y, self.end_reached
-
 
 class charData(LMData):
 	'''
@@ -528,10 +522,14 @@ class wordSentenceData(LMData):
 
 		all_data = self.read_data()
 
-		self.item_to_id['<bos>'] = len(self.item_to_id)
-		self.id_to_item[len(self.id_to_item)] = '<bos>'
+		if not '<bos>' in self.item_to_id:
+			self.item_to_id['<bos>'] = len(self.item_to_id)
+			self.id_to_item[len(self.id_to_item)] = '<bos>'
 
-		max_length = self.calc_longest_sent(all_data)
+		if 'max_length' in self.config:
+			max_length = self.config['max_length']
+		else:
+			max_length = self.calc_longest_sent(all_data)
 
 		# + 2 for <eos> and extra padding symbol at the end
 		#self.num_steps = max_length + 2
@@ -549,8 +547,6 @@ class wordSentenceData(LMData):
 			self.num_steps = self.eval_num_steps
 
 		length_sentence = self.num_steps
-
-		print('self.num_steps: {0}'.format(self.num_steps))
 
 		if self.iterator == 0:
 			self.end_reached = False
@@ -691,7 +687,7 @@ class wordSentenceDataStream(wordSentenceData):
 		max_length = 0
 		for f in list_files:
 			if os.path.isfile(f):
-				for line in codecs.open(f, 'r', self.encoding):
+				for line in io.open(f, 'r', encoding=self.encoding):
 					curr_length = len(line.strip().split(' '))
 					if curr_length > max_length:
 						max_length = curr_length
@@ -759,7 +755,7 @@ class wordSentenceDataStream(wordSentenceData):
 	def init_batching(self, data_path):
 
 		self.end_reached = False
-		data_file = codecs.open(data_path,"r", self.encoding)
+		data_file = io.open(data_path,"r", encoding=self.encoding)
 
 		return data_file
 
@@ -1167,131 +1163,6 @@ class charNGramData(LMData):
 		print('Size of n-gram vocabulary: {0}'.format(len(self.ngram_to_id)))
 
 
-	"""def file_to_ngram_ids(self, filename):
-		data = self.read_items(filename)
-		ngrams = []
-
-		for word in data:
-			# initialize zero vector of size of the ngram vocabulary
-			ngram_repr = np.zeros(len(self.ngram_to_id), dtype=np.float32)
-
-			# do not cut word in n-grams if it contains only 1 character or is a special symbol
-			if len(word) == 1 or word in self.special_symbols:
-				if word in self.ngram_to_id:
-					ngram_repr[self.ngram_to_id[word]] += 1
-				else:
-					ngram_repr[self.ngram_to_id['<UNKngram>']] += 1
-
-			else:
-
-				# if special marker for capital, check how many capitals the word has
-				if 'capital' in self.config:
-					num_capitals = sum(1 for char in word if char.isupper())
-					if num_capitals > 0:
-						# increase count at index of special capital marker
-						ngram_repr[self.ngram_to_id['<cap>']] += num_capitals
-
-				for pos in xrange(len(word)):
-
-					# not yet at the end of the word (otherwise the subword might be shorter than n)
-					if len(word[pos:pos+self.n]) == self.n:
-
-						curr_ngram = word[pos:pos+self.n]
-
-						# if special marker for capital: only use lower case n-grams
-						if 'capital' in self.config:
-							lower_version = curr_ngram.lower()
-							curr_ngram = lower_version
-
-						# increase count at index of character ngram
-						if curr_ngram in self.ngram_to_id:
-							ngram_repr[self.ngram_to_id[curr_ngram]] += 1
-						else:
-							ngram_repr[self.ngram_to_id['<UNKngram>']] += 1
-
-				# append '<eow>' to end of word
-				last_ngram = word[-1-self.n+2:]+'<eow>'
-
-				# increase count at index of character ngram
-				if last_ngram in self.ngram_to_id:
-					ngram_repr[self.ngram_to_id[last_ngram]] += 1
-				else:
-					ngram_repr[self.ngram_to_id['<UNKngram>']] += 1
-
-			ngrams.append(ngram_repr)
-
-		return ngrams
-
-	def file_to_skipgram_ids(self, filename, skip):
-		data = self.read_items(filename)
-		skipgrams = []
-
-		for word in data:
-
-			# initialize zero vector of size of the skipgram vocabulary
-			skipgram_repr = np.zeros(len(self.ngram_to_id), dtype=np.float32)
-
-			# do not cut word in n-grams if it contains only 1 character or is a special symbol
-			if len(word) == 1 or word in self.special_symbols:
-				if word in self.ngram_to_id:
-					skipgram_repr[self.ngram_to_id[word]] += 1
-				else:
-					skipgram_repr[self.ngram_to_id['<UNKskipgram>']] += 1
-
-			else:
-
-				# append '<bow>' to beginning of word
-				first_skipgram = '<bow>'+word[skip]
-				if first_skipgram in self.ngram_to_id:
-					skipgram_repr[self.ngram_to_id[first_skipgram]] += 1
-				else:
-					skipgram_repr[self.ngram_to_id['<UNKskipgram>']] += 1
-
-				# if special marker for capital, check how many capitals the word has
-				if 'capital' in self.config:
-					num_capitals = sum(1 for char in word if char.isupper())
-					if num_capitals > 0:
-						# increase count at index of special capital marker
-						skipgram_repr[self.ngram_to_id['<cap>']] += num_capitals
-
-				for pos in xrange(len(word)):
-
-
-					# not yet at the end of the word (otherwise the subword might be shorter than n)
-					if len(word[pos:]) >= skip+2:
-
-						curr_skipgram = word[pos] + word[pos+1+skip]
-						#print(u'curr_skipgram: {0}'.format(curr_skipgram).encode(self.encoding))
-
-						# if special marker for capital: only use lower case n-grams
-						if 'capital' in self.config:
-							lower_version = curr_skipgram.lower()
-							curr_skipgram = lower_version
-
-						# increase count at index of character skipgram
-						if curr_skipgram in self.ngram_to_id:
-							skipgram_repr[self.ngram_to_id[curr_skipgram]] += 1
-							#print('skipgram in vocab: index = {0}'.format(self.ngram_to_id[curr_skipgram]))
-						else:
-							skipgram_repr[self.ngram_to_id['<UNKskipgram>']] += 1
-							#print('skipgram not in vocab: index = {0}'.format(self.ngram_to_id['<UNKskipgram>']))
-
-				# WHAT ABOUT THE END OF THE WORD?
-				last_skipgram = word[-1-skip]+'<eow>'
-				#print(u'last_skipgram: {0}'.format(last_skipgram).encode(self.encoding))
-
-				if last_skipgram in self.ngram_to_id:
-					skipgram_repr[self.ngram_to_id[last_skipgram]] += 1
-				#	print('skipgram in vocab: index = {0}'.format(self.ngram_to_id[last_skipgram]))
-				else:
-					skipgram_repr[self.ngram_to_id['<UNKskipgram>']] += 1
-				#	print('skipgram not in vocab: index = {0}'.format(self.ngram_to_id['<UNKskipgram>']))
-
-			#print('skipgram_repr: {0}'.format(skipgram_repr))
-			skipgrams.append(skipgram_repr)
-
-		return skipgrams"""
-
 	def map_ngrams_to_ids(self, ngram_repr, word):
 		'''
 		Maps all n-grams in the word to a count on the input vector.
@@ -1565,9 +1436,6 @@ class charNGramData(LMData):
 		ngram_data = ngram_data[:batch_size * batch_len]
 		word_data = word_data[:batch_size * batch_len]
 
-		print('batch_len: {0}'.format(batch_len))
-		print('input_size: {0}'.format(input_size))
-
 		# for n-gram inputs: convert to numpy array: batch_size x batch_len x input_size
 		self.data_array_ngrams = np.array(ngram_data).reshape(batch_size, batch_len, input_size)
 
@@ -1612,8 +1480,5 @@ class charNGramData(LMData):
 		if self.iterator >= self.num_samples:
 			self.iterator = 0
 			self.end_reached = True
-		# otherwise, increase count
-		#else:
-		#	self.iterator += 1
 
 		return x, y, self.end_reached
