@@ -182,20 +182,19 @@ class lm(object):
 			# and the backward output contains p(the|mat...cat), p(cat|mat...lies)
 			# since the first element of the backward output already contains the target of the first element of the forward output,
 			# we delete that first element
-			outputs_fw = tf.slice(outputs_fw, [0,0,0], [self.batch_size, self.num_steps-1, self.size]) # NEW
-			outputs_bw = tf.slice(outputs_bw, [0,1,0], [self.batch_size, self.num_steps-1, self.size]) # NEW
+			if self.num_steps > 1:
+				outputs_fw = tf.slice(outputs_fw, [0,0,0], [self.batch_size, self.num_steps-1, self.size]) # NEW
+				outputs_bw = tf.slice(outputs_bw, [0,1,0], [self.batch_size, self.num_steps-1, self.size]) # NEW
 
 			outputs = tf.concat([outputs_fw, outputs_bw], 2)
 			state = state_fw
 
 		elif 'per_sentence' in self.config:
-			#outputs, state = tf.contrib.rnn.static_rnn(self.cell, inputs, state, sequence_length=self.seq_length)
 			outputs, state = tf.nn.dynamic_rnn(self.cell, inputs, sequence_length=self.seq_length, initial_state=state)
 
 		else:
 			# feed inputs to network: outputs = predictions, state = new hidden state
 			outputs, state = tf.nn.dynamic_rnn(self.cell, inputs, sequence_length=None, initial_state=state)
-			#outputs, state = tf.contrib.rnn.static_rnn(self.cell, inputs, state)
 
 		self._final_state = state
 		if 'bidirectional' in self.config:
@@ -219,7 +218,7 @@ class lm(object):
 
 			# sentence-level batching: mask the loss for the padding
 			# no mask during testing since num_steps = 1 and batch_size = 1
-			if 'per_sentence' in self.config and self.num_steps > 1 and self.batch_size > 1:
+			if 'per_sentence' in self.config and (self.num_steps > 1 or self.batch_size > 1):
 				self.masked_loss = tf.multiply(self.loss, self.final_mask)
 				self.unnormalized_loss = tf.reduce_sum(self.masked_loss, name="reduce_loss")
 				self.cost = self.unnormalized_loss / self.batch_size
@@ -290,7 +289,7 @@ class lm(object):
 		'''
 		if self.config['softmax'] == 'full':
 
-			if 'bidirectional' in self.config:
+			if 'bidirectional' in self.config and self.num_steps > 1:
 				targets = tf.reshape(tf.slice(self.targets, [0,0], [self.batch_size, self.num_steps-1]), [-1])
 			else:
 				targets = tf.reshape(self.targets, [-1])
@@ -404,9 +403,6 @@ class lm_ngram(lm):
 		else:
 			self.char_size = self.size
 
-		print('vocab size for output: {0}'.format(self.vocab_size))
-		print('size for character n-grams: {0}'.format(self.char_size))
-		print('size for character n-gram vocabulary: {0}'.format(self.config['input_size']))
 
 		# n-gram input
 		self.inputs = tf.placeholder(dtype=tf.float32, shape=[self.batch_size, self.num_steps, self.config['input_size']], name='inputs')
