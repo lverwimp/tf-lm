@@ -8,7 +8,7 @@ Options in the configuration file:
 
 # Files/directories
 
-* **data_path** (string): path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt' (or train_<size>k-unk.txt etc. if you are using a restricted vocabulary)
+* **data_path** (string): path where the training/validation/test sets are located, should contain files named 'train.txt', 'valid.txt' and 'test.txt' (or train_\<size\>k-unk.txt etc. if you are using a restricted vocabulary)
 
 * **save_path** (string): path where the model will be saved
 
@@ -21,7 +21,7 @@ Options in the configuration file:
 Default: all data is read at once and kept in memory. If the dataset is too large for this, use:
 
 * **stream_data** (optional, True): Read data sentence by sentence. This assumes that the data file contains one sentence per line and that batching is sentence-level!
-  * **read_vocab_from_file** (optional, string): To speed up more, read the vocabulary from file. The vocabulary file should contain 2 columns: the words and their ids. The *data_path* should also contain a file *max_sentence_length* with the length of the longest sentence (will be the length of every batch).
+  * **read_vocab_from_file** (optional, string): To speed up more, read the vocabulary from file. The vocabulary file should contain 2 columns: the words and their ids (numerical indices). The *data_path* should also contain a file *max_sentence_length* with the length of the longest sentence (will be the length of every batch).
 
 # Size of the model
 
