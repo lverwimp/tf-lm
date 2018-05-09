@@ -92,7 +92,7 @@ Default: input and output unit = word.
     * **input_vocab_size** (integer): size of word input vocabulary
     * **input_vocab** (optional, integer): size of word input vocab divided by 1000, in case you want to read the vocabulary from a dataset with a reduced vocabulary (e.g. train_1k-unk.txt)
     
-* **word_char_concat** (optional, True): inputs consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word, output is still words. Character feature files can be generated with aux_scripts/make_char_feat_files.py. Used in combination with:
+* **word_char_concat** (optional, True): input consists of the concatenation of the word embedding and embeddingss of (part of) the characters occurring in the word, output is still words. Character feature files can be generated with aux_scripts/make_char_feat_files.py. Used in combination with:
 
   * **num_char** (integer): number of characters to add (if the current word is shorter than *num_char*, padding symbols are used; if it is longer than *num_char*, only part of the characters in the word are added)
   
