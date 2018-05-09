@@ -107,7 +107,7 @@ Default: input and output unit = word.
 
 Default: each batch is of length *num_steps* and may contain multiple (parts of) sentences ('discourse').
 
-* **per_sentence** (optional, True): if this option is set to 'True', each sentence individually is processed and padded until the length of the longest sentence in the data ('sentence').
+* **per_sentence** (optional, True): if this option is set to 'True', each sentence is processed individually and padded until the length of the longest sentence in the data ('sentence').
 
 * **padding_symbol** (optional, string): the default padding symbol is '@'; if your dataset already contains this symbol, choose another one that doesn't occur in the data.
 
