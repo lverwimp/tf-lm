@@ -12,9 +12,10 @@ Options in the configuration file:
 
 * **save_path** (string): path where the model will be saved
 
+* **log_dir** (string): path where the log file will be saved
+
 * **log** (optional, string): name for the log file
-  * change LOG_DIR in main.py to a directory of your choice
-  * if no log is specified, the log file will be LOG_DIR/\<basename of save_path\>
+  * if no log is specified, the log file will be log_dir/\<basename of save_path\>
   
 # Reading data
 
