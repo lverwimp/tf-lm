@@ -4,10 +4,11 @@ The main purpose of tf-lm is providing a toolkit for researchers that want to us
 
 A description of the toolkit can be found in this paper:
 
-Verwimp, Lyan, Van hamme, Hugo and Patrick Wambacq. 2018. TF-LM: TensorFlow-based Language Modeling Toolkit. In *Proceedings LREC*, Miyazaki, Japan, 9-11 May 2018.
+Verwimp, Lyan, Van hamme, Hugo and Patrick Wambacq. 2018. [TF-LM: TensorFlow-based Language Modeling Toolkit](paper_LREC18.pdf). In *Proceedings LREC*, Miyazaki, Japan, 9-11 May 2018.
+The poster presented at LREC 2018 can be found [here](poster_LREC18.pdf).
 
 
-These scripts are compatible with TensorFlow **v1.4**. Updating to the latest TF version if on my to do-list.
+These scripts are compatible with TensorFlow **v1.4**. Updating to the latest TF version is on my to do-list.
 
 !!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
 
