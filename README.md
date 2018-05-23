@@ -1,11 +1,15 @@
 # tf-lm
 This repository contains scripts for recurrent neural network language modeling with TensorFlow, and a link to pre-trained language models on several benchmarks.
+The main purpose of tf-lm is providing a toolkit for researchers that want to use a language model as is, or for researchers that do not have a lot of experience with language modeling/neural networks and would like to start with it.
 
-These scripts are compatible with TensorFlow **v1.4**. 
+A description of the toolkit can be found in this paper:
+
+Verwimp, Lyan, Van hamme, Hugo and Patrick Wambacq. 2018. TF-LM: TensorFlow-based Language Modeling Toolkit. In *Proceedings LREC*, Miyazaki, Japan, 9-11 May 2018.
+
+
+These scripts are compatible with TensorFlow **v1.4**. Updating to the latest TF version if on my to do-list.
 
 !!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
-
-Last update (18th December 2017): added data preparation scripts.
 
 # Installation and setup
 
