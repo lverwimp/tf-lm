@@ -18,7 +18,6 @@ These scripts are compatible with TensorFlow **v1.4**. Updating to the latest TF
 * Python version used: 2.7.5. 
 * Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.4.
 * Modify the config files in config/: change the pathnames and optionally the parameters.
-* Modify the log directory in main.py (LOG_DIR=...).
 
 # Options
 
