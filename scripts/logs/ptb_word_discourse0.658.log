@@ -1,0 +1,31 @@
+configuration:
+vocab	False
+vocab_size	10000
+layer	LSTM
+optimizer	sgd
+forget_bias	0
+max_epoch	6
+learning_rate	1
+data_path	data/PennTreeBank
+num_steps	35
+batch_size	20
+lr_decay	0.8
+max_grad_norm	5
+trainer	trainer
+log_dir	logs/
+save_path	models/ptb/ptb_word_discourse/
+num_layers	1
+max_max_epoch	39
+softmax	full
+dropout	0.5
+init_scale	0.05
+size	512
+Word-level data, across sentence boundaries
+Create training model...
+Standard LM
+Create validation model...
+Standard LM
+Create testing model...
+Standard LM
+Learning rate: 1.0
+Start training epoch...

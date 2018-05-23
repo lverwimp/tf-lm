@@ -22,10 +22,6 @@ flags.DEFINE_boolean("test", True,"Test the model or not.")
 flags.DEFINE_string("device", None,"Specify 'cpu' if you want to run on cpu.")
 FLAGS = flags.FLAGS
 
-# TO ADAPT: directory for log files
-LOG_DIR = '/esat/spchtemp/scratch/lverwimp/tensorflow/logs/'
-
-
 def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 	'''
 	Reads data from file.
@@ -266,8 +262,8 @@ def main(_):
 	if device == 'cpu':
 		os.environ['CUDA_VISIBLE_DEVICES']="" # if you don't want to use GPU
 
-	eval_config = config.copy() # same parameters for evaluation, except for:
 
+	eval_config = config.copy() # same parameters for evaluation, except for:
 	eval_config['batch_size'] = 1 # batch_size
 
 	# num_steps for testing model = 1, except for:
@@ -277,20 +273,29 @@ def main(_):
 		pass
 	else:
 		eval_config['num_steps'] = 1
+		
 
+	# make sure save_path and log_dir exist
 	try:
 		os.makedirs(config['save_path'])
 	except OSError:
 		pass
 
+	try:
+		os.makedirs(config['log_dir'])
+	except OSError:
+		pass
+	
+	# if no name for the log file is specified, use the same name as save_path
 	if 'log' in config:
-		log_file = LOG_DIR + os.path.basename(os.path.normpath(config['log'])) + '.log'
+		log_file = os.path.join(config['log_dir'], '{0}.log'.format(os.path.basename(os.path.normpath(config['log']))))
 	else:
-		log_file = LOG_DIR + os.path.basename(os.path.normpath(config['save_path'])) + '.log'
+		log_file = os.path.join(config['log_dir'], '{0}.log'.format(os.path.basename(os.path.normpath(config['save_path']))))
+
 	# if log file already exists, make a new version by adding a random number (to avoid overwriting)
 	if os.path.isfile(log_file):
 		rand_num = round(random.random(),3)
-		log_file = log_file.strip('.log') + str(rand_num) + '.log'
+		log_file = log_file.rstrip('.log') + str(rand_num) + '.log'
 
 	fout = file(log_file,'w',0)
 	# write both to standard output and log file
@@ -306,7 +311,6 @@ def main(_):
 
 	with tf.Graph().as_default():
 
-		# TO DO: CHECK WHETHER THIS WORKS!!!
 		if not 'random' in config:
 			# use the same seed for random initialization (to better compare models)
 			tf.set_random_seed(1)
