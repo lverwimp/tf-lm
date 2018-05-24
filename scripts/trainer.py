@@ -11,10 +11,10 @@ class trainer(object):
 	This class continues training for max_max_epoch epochs (specified in config file).
 	'''
 
-	def __init__(self, sv, session, config, train_lm, valid_lm, data, train_data, valid_data):
+	def __init__(self, session, saver, config, train_lm, valid_lm, data, train_data, valid_data):
 
-		self.sv = sv
 		self.session = session
+		self.saver = saver
 		self.config = config
 		self.train_lm = train_lm
 		self.valid_lm = valid_lm
@@ -43,6 +43,8 @@ class trainer(object):
 			train_perplexity = self.train_runner()
 
 			print('Epoch: {0} Train Perplexity: {1}'.format(i + 1, train_perplexity))
+			
+			self.saver.save(self.session, os.path.join(self.config['save_path'],'epoch{0}'.format(i)))
 
 			print('Start validating...')
 			valid_perplexity = self.valid_runner()
@@ -77,10 +79,6 @@ class trainer(object):
 		self.train_lm.assign_epoch(self.session, (i+1))
 
 	def decide_next_step(self, i, valid_perplexity):
-
-		if 'save_path' in self.config:
-			print('Saving model to {0}.{1}'.format(self.model_name,i+1))
-			self.sv.saver.save(self.session, '{0}.{1}'.format(self.model_name,i+1))
 
 		# no early stopping
 		return False
