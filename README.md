@@ -8,15 +8,14 @@ Verwimp, Lyan, Van hamme, Hugo and Patrick Wambacq. 2018. [TF-LM: TensorFlow-bas
 
 The poster presented at LREC 2018 can be found [here](poster_LREC18.pdf).
 
-
-These scripts are compatible with TensorFlow **v1.4**. Updating to the latest TF version is on my to do-list.
+Last update (24/05/2018): made the scripts compatible with TF version 1.8.
 
 !!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
 
 # Installation and setup
 
 * Python version used: 2.7.5. 
-* Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.4.
+* Install [TensorFlow](https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#download-and-setup). These scripts are compatible with version 1.8.
 * Modify the config files in config/: change the pathnames and optionally the parameters.
 
 # Options
@@ -45,13 +44,13 @@ For more information on how to specify these options in a configuration file, se
 
 # Code overview
 
-Main script:
+Main script: by default training, validation and testing is done.
 
 * main.py:
   * --config: configuration file specifying all options
-  * --train: boolean marking whether you want to train the model or not (default = True)
-  * --valid: boolean marking whether you want to validate the model or not (default = True)
-  * --test: boolean marking whether you want to test the model or not (default = True)
+  * --notrain: skip training the model
+  * --novalid: skip validating the model
+  * --notest: skip testing the model
   * --device: use with 'cpu' if you want to explicitly run on cpu, otherwise it will try to run on gpu
   
 
