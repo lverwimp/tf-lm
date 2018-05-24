@@ -318,12 +318,16 @@ def main(_):
 
 		if TRAIN:
 
+			tf.train.create_global_step()
+			
 			reuseOrNot = True # valid and test models: reuse the graph
 
 			print('Create training model...')
 			with tf.name_scope("Train"):
 				with tf.variable_scope("Model", reuse=None, initializer=initializer):
 					train_lm = create_lm(config, is_training=True, reuse=False)
+					
+				saver = tf.train.Saver()
 
 		else:
 			reuseOrNot = None
@@ -354,7 +358,7 @@ def main(_):
 
 				# create a trainer object based on config file
 				class_name = 'trainer.{0}'.format(config['trainer'])
-				train_obj = eval(class_name)(sv, session, config, train_lm, valid_lm, data, train_data, valid_data)
+				train_obj = eval(class_name)(sv, session, saver, config, train_lm, valid_lm, data, train_data, valid_data)
 
 				# train + validate the model
 				train_obj.train()
