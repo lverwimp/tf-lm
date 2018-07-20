@@ -358,7 +358,7 @@ def main(_):
 
 				# create a trainer object based on config file
 				class_name = 'trainer.{0}'.format(config['trainer'])
-				train_obj = eval(class_name)(sv, session, saver, config, train_lm, valid_lm, data, train_data, valid_data)
+				train_obj = eval(class_name)(session, saver, config, train_lm, valid_lm, data, train_data, valid_data)
 
 				# train + validate the model
 				train_obj.train()
