@@ -90,9 +90,9 @@ class earlyStopping(trainer):
 	Train with early stopping: stop training if the validation ppl did not improve for the last x epochs.
 	Config file should contain 'early_stop' + integer.
 	'''
-	def __init__(self, session, config, train_lm, valid_lm, data, train_data, valid_data):
+	def __init__(self, session, saver, config, train_lm, valid_lm, data, train_data, valid_data):
 
-		super(earlyStopping, self).__init__(session, config, train_lm, valid_lm, data, train_data, valid_data)
+		super(earlyStopping, self).__init__(session, saver, config, train_lm, valid_lm, data, train_data, valid_data)
 
 		if not isinstance(config['early_stop'], int):
 			raise IOError('early_stop in config file should be an integer \
