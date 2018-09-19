@@ -64,7 +64,7 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 			data = lm_data.charSentenceDataRescore(config, eval_config, TRAIN, VALID, TEST)
 		else:
 			data = lm_data.wordSentenceDataRescore(config, eval_config, TRAIN, VALID, TEST)
-			
+
 		all_data, vocab_size, _ = data.get_data()
 
 	# character-level training, in batches (across sentence boundaries)
@@ -394,15 +394,10 @@ def main(_):
 
 							if 'bidirectional' in config:
 								length_batch = test_lm.num_steps + 1
-								x, y, end_reached, seq_lengths = data.get_batch(data_file, test=True, num_steps=length_batch)
+								x, _, _, _ = data.get_batch(data_file, test=True, num_steps=length_batch)
 							else:
-								length_batch = test_lm.num_steps
-								x, y, end_reached, seq_lengths = data.get_batch(data_file, test=True)
+								x, _, _, seq_lengths = data.get_batch(data_file, test=True)
 
-							if end_reached:
-								break
-
-							#tester(np.reshape(x, [length_batch]))
 							tester(x[0])
 
 					# normal sentence-level rescoring
