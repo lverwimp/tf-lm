@@ -366,16 +366,19 @@ class rescore(run_epoch):
 				if input_word != self.data_object.PADDING_SYMBOL and \
 						not self.print_predictions and \
 						input_word != '<bos>':
-					if 'char' in self.model.config:
-						# no space
-						self.results_f.write(u'{0}'.format(input_word))
-					else:
-						if 'interactive' in self.model.config:
-							if input_word == '<eos>':
-								print('')
+
+					if 'interactive' in self.model.config:
+						if input_word == '<eos>':
+							print('')
+						else:
+							if 'char' in self.model.config:
+								print(u'{0}'.format(input_word).encode('utf-8'), end='')
 							else:
 								print(u'{0} '.format(input_word).encode('utf-8'), end='')
 
+					if 'char' in self.model.config:
+						self.results_f.write(u'{0}'.format(input_word))
+					else:
 						self.results_f.write(u'{0} '.format(input_word))
 
 			# testing: ignore padding symbols for sentence-level models
@@ -479,6 +482,11 @@ class rescore(run_epoch):
 							break
 						else:
 							if 'char' in self.model.config:
+								if 'interactive' in self.model.config:
+									if predicted_word == '<eos>':
+										print('')
+									else:
+										print(u'{0}'.format(predicted_word).encode('utf-8'), end='')
 								self.results_f.write(u'{0}'.format(predicted_word))
 							else:
 								if 'interactive' in self.model.config:

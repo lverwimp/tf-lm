@@ -47,8 +47,28 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 		raise IOError("Training of bidirectional models is only supported for sentence-level models.")
 		sys.exit(1)
 
+	if 'predict_next' in config and 'interactive' in config:
+
+		print('Type a seed word or sentence:')
+		seed = raw_input()
+		print('Start generating text for the seed "{0}"...'.format(seed))
+
+			# write seed to temporary file
+		out = io.open('tmp','w')
+		out.write(u'{0}'.format(seed))
+		out.close()
+
+		config['predict_next'] = 'tmp'
+
+		if 'char' in config:
+			data = lm_data.charSentenceDataRescore(config, eval_config, TRAIN, VALID, TEST)
+		else:
+			data = lm_data.wordSentenceDataRescore(config, eval_config, TRAIN, VALID, TEST)
+			
+		all_data, vocab_size, _ = data.get_data()
+
 	# character-level training, in batches (across sentence boundaries)
-	if 'char' in config:
+	elif 'char' in config:
 		print('Character-level data')
 		if 'per_sentence' in config:
 			print('Sentence per sentence')
@@ -74,7 +94,6 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 			data = lm_data.charData(config, eval_config, TRAIN, VALID, TEST)
 			all_data, vocab_size, _ = data.get_data()
 
-
 	# word-level training, on sentence level (sentences are padded until maximum sentence length)
 	elif 'per_sentence' in config:
 
@@ -96,7 +115,7 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 
 			config['num_steps'] = total_length
 
-			if not 'rescore' in config and not 'predict_next' in config:
+			if not 'rescore' in config and not 'predict_next' in config and not 'debug2' in config:
 				eval_config['num_steps'] = total_length
 
 			# write maximum sentence length to file
@@ -126,22 +145,6 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 			max_length_f = io.open('{0}max_length'.format(config['save_path']), 'w')
 			max_length_f.write(u'{0}\n'.format(total_length))
 			max_length_f.close()
-
-	elif 'predict_next' in config and 'interactive' in config:
-
-		print('Type a seed word or sentence:')
-		seed = raw_input()
-		print('Start generating text for the seed "{0}"...'.format(seed))
-
-		# write seed to temporary file
-		out = io.open('tmp','w')
-		out.write(u'{0}'.format(seed))
-		out.close()
-
-		config['predict_next'] = 'tmp'
-
-		data = lm_data.wordSentenceDataRescore(config, eval_config, TRAIN, VALID, TEST)
-		all_data, vocab_size, _ = data.get_data()
 
 	# rescoring with non-sentence-level LMs: prepare data sentence-level
 	# except when it is explicitily specified not to (across_sentence)
@@ -273,7 +276,7 @@ def main(_):
 		pass
 	else:
 		eval_config['num_steps'] = 1
-		
+
 
 	# make sure save_path and log_dir exist
 	try:
@@ -285,7 +288,7 @@ def main(_):
 		os.makedirs(config['log_dir'])
 	except OSError:
 		pass
-	
+
 	# if no name for the log file is specified, use the same name as save_path
 	if 'log' in config:
 		log_file = os.path.join(config['log_dir'], '{0}.log'.format(os.path.basename(os.path.normpath(config['log']))))
@@ -319,14 +322,14 @@ def main(_):
 		if TRAIN:
 
 			tf.train.create_global_step()
-			
+
 			reuseOrNot = True # valid and test models: reuse the graph
 
 			print('Create training model...')
 			with tf.name_scope("Train"):
 				with tf.variable_scope("Model", reuse=None, initializer=initializer):
 					train_lm = create_lm(config, is_training=True, reuse=False)
-					
+
 				saver = tf.train.Saver()
 
 		else:
@@ -399,7 +402,8 @@ def main(_):
 							if end_reached:
 								break
 
-							tester(np.reshape(x, [length_batch]))
+							#tester(np.reshape(x, [length_batch]))
+							tester(x[0])
 
 					# normal sentence-level rescoring
 					# test_data already contains all data

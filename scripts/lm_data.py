@@ -701,7 +701,7 @@ class wordSentenceDataStream(wordSentenceData):
 		curr_batch = []
 		seq_lengths = []
 		for i in xrange(self.batch_size):
-			curr_sentence = f.readline().strip()
+			curr_sentence = f.readline().replace('\n',' <eos>')
 
 			# if end of file is reached
 			if curr_sentence == '':
@@ -709,9 +709,18 @@ class wordSentenceDataStream(wordSentenceData):
 				f.close()
 				return None, None, end_reached, None
 
-			# input batch: words
-			curr_sentence_idx = [self.item_to_id[word] if word in self.item_to_id \
-				else self.item_to_id[self.unk] for word in curr_sentence.split(' ')]
+			# input batch: convert words to indices
+			curr_sentence_idx = [self.item_to_id['<bos>']]
+			for w in curr_sentence.split(' '):
+				# ignore blanks
+				if w == '':
+					continue
+				elif w in self.item_to_id:
+					curr_sentence_idx.append(self.item_to_id[w])
+				# map OOV words to UNK-symbol
+				else:
+					curr_sentence_idx.append(self.item_to_id[self.unk])
+
 			# length of sentence (for dynamic rnn)
 			seq_lengths.append(len(curr_sentence_idx))
 			number_pads = self.max_length - len(curr_sentence_idx) + 1
