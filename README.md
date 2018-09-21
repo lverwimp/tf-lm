@@ -8,7 +8,7 @@ Verwimp, Lyan, Van hamme, Hugo and Patrick Wambacq. 2018. [TF-LM: TensorFlow-bas
 
 The poster presented at LREC 2018 can be found [here](poster_LREC18.pdf).
 
-Last update (24/05/2018): made the scripts compatible with TF version 1.8.
+Last update (21/09/2018): added functionality to display the graph in TensorBoard and to add the word labels in the TensorBoard embedding projector (load 'labels.tsv').
 
 !!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
 
