@@ -43,7 +43,26 @@ class trainer(object):
 			train_perplexity = self.train_runner()
 
 			print('Epoch: {0} Train Perplexity: {1}'.format(i + 1, train_perplexity))
-			
+
+
+			# this block is based on
+			# https://github.com/hyunyoung2/hyunyoung2_Machine_Learning/blob/master/Tutorial/Tensorflow/03.Word2Vec/01.Word_Embedding.ipynb
+			# Format: tensorflow/contrib/tensorboard/plugins/projector/projector_config.proto
+			'''config = tf.contrib.tensorboard.plugins.projector.ProjectorConfig()
+			# You can add multiple embeddings. Here we add only one.
+			embedding_config = config.embeddings.add()
+			embedding_config.tensor_name = embeddings.name
+			# Link this tensor to its metadata file (e.g. labels).
+			embedding_config.metadata_path = self.train_data.label_file
+
+			# Use the same LOG_DIR where you stored your checkpoint.
+			summary_writer = tf.summary.FileWriter(os.path.join(self.config['save_path'], 'train'))
+
+			# The next line writes a projector_config.pbtxt in the LOG_DtenIR. TensorBoard will
+			# read this file during startup.
+			tf.contrib.tensorboard.plugins.projector.visualize_embeddings(summary_writer, config)'''
+
+
 			self.saver.save(self.session, os.path.join(self.config['save_path'],'epoch{0}'.format(i)))
 
 			print('Start validating...')

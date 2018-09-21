@@ -321,14 +321,15 @@ def main(_):
 
 		if TRAIN:
 
-			tf.train.create_global_step()
-
 			reuseOrNot = True # valid and test models: reuse the graph
 
 			print('Create training model...')
 			with tf.name_scope("Train"):
 				with tf.variable_scope("Model", reuse=None, initializer=initializer):
+
 					train_lm = create_lm(config, is_training=True, reuse=False)
+					merged = tf.summary.merge_all()
+					train_writer = tf.summary.FileWriter(os.path.join(config['save_path'], 'train'))
 
 				saver = tf.train.Saver()
 
@@ -359,12 +360,16 @@ def main(_):
 
 			if TRAIN and VALID:
 
+				train_writer.add_graph(session.graph)
+
 				# create a trainer object based on config file
 				class_name = 'trainer.{0}'.format(config['trainer'])
 				train_obj = eval(class_name)(session, saver, config, train_lm, valid_lm, data, train_data, valid_data)
 
 				# train + validate the model
 				train_obj.train()
+
+				train_writer.close()
 
 			if VALID and not TRAIN:
 
@@ -394,11 +399,16 @@ def main(_):
 
 							if 'bidirectional' in config:
 								length_batch = test_lm.num_steps + 1
-								x, _, _, _ = data.get_batch(data_file, test=True, num_steps=length_batch)
+								x, _, end_reached, seq_lengths = data.get_batch(data_file, test=True, num_steps=length_batch)
 							else:
-								x, _, _, seq_lengths = data.get_batch(data_file, test=True)
+								x, _, end_reached, _ = data.get_batch(data_file, test=True)
 
-							tester(x[0])
+							if end_reached:
+								print('Done')
+								sys.exit(0)
+
+							else:
+								tester(x[0])
 
 					# normal sentence-level rescoring
 					# test_data already contains all data
@@ -414,15 +424,17 @@ def main(_):
 							if counter % 100 == 0:
 								print('{0} sentences processed'.format(counter))
 
-				else:
+						print('Done')
+						sys.exit(0)
 
+				else:
+					print('in else')
 					tester = run_epoch.run_epoch(session, test_lm, data, test_data,
 						eval_op=None, test=True)
 
 					test_perplexity = tester()
 
 					print('Test Perplexity: {0}'.format(test_perplexity))
-
 
 
 if __name__ == "__main__":

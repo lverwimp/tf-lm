@@ -238,7 +238,6 @@ class lm(object):
 
 			self.lr = tf.Variable(float(self.config['learning_rate']), trainable=False, name="learning_rate")
 			self.epoch = tf.Variable(0, trainable=False, name="epoch")
-			self.global_step = tf.Variable(0, name='global_step', trainable=False)
 
 			# tvars = list of trainable variables
 			tvars = tf.trainable_variables()
@@ -256,7 +255,7 @@ class lm(object):
 			# apply gradients + increment global step
 			self.train_op = optimizer.apply_gradients(
 				zip(grads, tvars),
-				global_step=self.global_step,
+				tf.train.get_global_step(),
 				name="train_op")
 
 			self.new_lr = tf.placeholder(tf.float32, shape=[], name="new_learning_rate")

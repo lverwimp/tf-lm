@@ -311,6 +311,15 @@ class LMData(object):
 			if 'save_dict' in self.config:
 				save_item_to_id(self.item_to_id, '{0}.dict'.format(self.config['save_dict']), self.encoding)
 
+		# make a label file to visualize the embeddings
+		#with the correct labels (= words instead of ids) in tensorboard
+		self.label_file = os.path.join(self.config['save_path'], "labels.tsv")
+
+		# Write label file
+		with open(self.label_file,"w") as f:
+			for i in range(len(self.id_to_item)):
+				f.write('{0}\n'.format(self.id_to_item[i]))
+
 		# list of all words in training data converted to their ids
 		if self.TRAIN:
 			train_data = self.file_to_item_ids(self.train_path)
@@ -698,10 +707,16 @@ class wordSentenceDataStream(wordSentenceData):
 		if test:
 			self.batch_size = self.eval_batch_size
 
+		end_reached = False
+
 		curr_batch = []
 		seq_lengths = []
 		for i in xrange(self.batch_size):
 			curr_sentence = f.readline().replace('\n',' <eos>')
+
+			if not curr_sentence:
+				end_reached = True
+				break
 
 			# if end of file is reached
 			if curr_sentence == '':
@@ -728,13 +743,17 @@ class wordSentenceDataStream(wordSentenceData):
 			curr_sentence_idx.extend(padding)
 			curr_batch.append(curr_sentence_idx)
 
-		curr_batch_array = np.array(curr_batch)
-		x = curr_batch_array[:,:-1]
-		y = curr_batch_array[:,1:]
+		if end_reached:
+			return None, None, end_reached, None
 
-		seq_lengths_array = np.array(seq_lengths)
+		else:
+			curr_batch_array = np.array(curr_batch)
+			x = curr_batch_array[:,:-1]
+			y = curr_batch_array[:,1:]
 
-		return x, y, False, seq_lengths_array
+			seq_lengths_array = np.array(seq_lengths)
+
+			return x, y, False, seq_lengths_array
 
 
 	def prepare_data(self):
@@ -1350,6 +1369,15 @@ class charNGramData(LMData):
 
 			# build vocab for input word representation
 			self.input_item_to_id, self.input_id_to_item = self.build_vocab(input_train_path)
+
+		# make a label file to visualize the embeddings
+		#with the correct labels (= words instead of ids) in tensorboard
+		self.label_file = os.path.join(self.config['save_path'], "labels.tsv")
+
+		# Write label file
+		with open(self.label_file,"w") as f:
+			for i in range(len(self.input_id_to_item)):
+				f.write('{0}\n'.format(self.input_id_to_item[i]))
 
 		# lists of all ngrams/words in training data converted to their ids
 		if self.TRAIN:
