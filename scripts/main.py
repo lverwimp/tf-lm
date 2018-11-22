@@ -428,7 +428,6 @@ def main(_):
 						sys.exit(0)
 
 				else:
-					print('in else')
 					tester = run_epoch.run_epoch(session, test_lm, data, test_data,
 						eval_op=None, test=True)
 
