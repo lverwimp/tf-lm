@@ -312,13 +312,12 @@ class LMData(object):
 				save_item_to_id(self.item_to_id, '{0}.dict'.format(self.config['save_dict']), self.encoding)
 
 		# make a label file to visualize the embeddings
-		#with the correct labels (= words instead of ids) in tensorboard
+		# with the correct labels (= words instead of ids) in tensorboard
 		self.label_file = os.path.join(self.config['save_path'], "labels.tsv")
-
-		# Write label file
-		with open(self.label_file,"w") as f:
+		# write label file
+		with io.open(self.label_file, 'w', encoding=self.encoding) as f:
 			for i in range(len(self.id_to_item)):
-				f.write('{0}\n'.format(self.id_to_item[i]))
+				f.write(u'{0}\n'.format(self.id_to_item[i]))
 
 		# list of all words in training data converted to their ids
 		if self.TRAIN:
