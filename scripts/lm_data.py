@@ -102,9 +102,8 @@ class LMData(object):
 
 		# by default, unknown words are represented with <unk>
 		# if this is not the case for a certain dataset, add it here
-		if self.config['data_path'].startswith('/users/spraak/lverwimp/data/CGN') or \
-				self.config['data_path'].startswith('/users/spraak/lverwimp/data/WSJ/88') or\
-				self.config['data_path'].startswith('/users/spraak/lverwimp/data/MGB_Arabic'):
+		if 'CGN' in self.config['data_path'] or \
+				'WSJ/88' in self.config['data_path']:
 			self.unk = '<UNK>'
 			self.replace_unk = '<unk>'
 		else:
