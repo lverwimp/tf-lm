@@ -12,7 +12,7 @@ class run_epoch(object):
 	'''
 	Runs one epoch (one pass over all data) of training, or calculates the validation or test perplexity.
 	'''
-	def __init__(self, session, model, data_object, data_set, eval_op=None, test=False):
+	def __init__(self, session, model, data_object, data_set, eval_op=None, test=False, cache=False):
 
 		self.session = session
 		self.model = model
@@ -20,16 +20,27 @@ class run_epoch(object):
 		self.data_set = data_set
 		self.eval_op = eval_op
 		self.test = test
+		self.cache = cache
+
+		if 'cache_size' in self.model.config and self.model.use_cache:
+			# initialize cache to empty cache
+			self.session.run(self.model.init_cache_op)
 
 	def __call__(self):
 		costs = 0.0 # cross entropy based on normal (LM only) probabilities
 		iters = 0
+		cache_iters = 0
+		final_interp_cross_entropy = 0.0 # cross entropy based on interpolated probabilities
 
 		# state = initial state of the model
 		state = self.get_init_state()
 
 		# create fetches dictionary = what we want the graph to return
 		fetches = self.create_fetches()
+
+		# fetches = tuple for cache model
+		if self.model.use_cache:
+			fetches, fetches_two = fetches
 
 		end_reached = False
 
@@ -71,6 +82,10 @@ class run_epoch(object):
 			# vals contains the values for the variables specified in fetches after feeding feed_dict to the model
 			vals = self.session.run(fetches, feed_dict)
 
+			if self.model.use_cache:
+				# 2nd run to check whether the variables changed the way we wanted it
+				vals_two = self.session.run(fetches_two, feed_dict)
+
 			# debugging: print every sample (input + target) that is fed to the model
 			if PRINT_SAMPLES:
 				self.print_samples(vals['input_sample'], vals['target_sample'])
@@ -86,6 +101,13 @@ class run_epoch(object):
 				costs += vals["cost"]
 				iters += self.model.num_steps
 
+			# if it's a cache model, calculate the ppl including the cache probs
+			if self.model.use_cache:
+				interp_ppl, final_interp_cross_entropy, cache_iters = self.calc_cache_ppl(
+						vals, vals_two,final_interp_cross_entropy, cache_iters, seq_lengths)
+			else:
+				interp_ppl = None
+
 			ppl = np.exp(costs / iters)
 
 			# if PRINT_INTERMEDIATE is True, ppl and time after each batch is printed
@@ -93,7 +115,7 @@ class run_epoch(object):
 			if PRINT_INTERMEDIATE and (iters % (self.model.num_steps*100) == 0):
 				print('ppl {0} ({1} seconds)'.format(ppl, time.time() - start_time))
 
-		return ppl
+		return ppl, interp_ppl
 
 	def get_init_state(self):
 		'''
@@ -112,7 +134,11 @@ class run_epoch(object):
 		Initialize to state of previous time step.
 		'''
 
-		state = vals["final_state"]
+		if self.cache and 'rescore' in self.model.config:
+			state = vals[0]["final_state"]
+		else:
+			state = vals["final_state"]
+
 		if 'bidirectional' in self.model.config:
 			state_bw = vals["final_state_bw"]
 			state = (state, state_bw)
@@ -162,6 +188,18 @@ class run_epoch(object):
 		# _train_op in training phase
 		if self.eval_op is not None:
 			fetches["eval_op"] = self.eval_op
+
+		if self.model.use_cache:
+			fetches["result_interpolation_op"] = self.model.result_interpolation_op
+			fetches["cache_probs_op"] = self.model.cache_probs_op
+
+			fetches_two = {
+				"result_interpolation": self.model.result_interpolation,
+				"all_cache_probs": self.model.all_cache_probs,
+				"cache_words": self.model.cache_words
+				}
+
+			fetches = (fetches, fetches_two)
 
 		if 'bidirectional' in self.model.config:
 			fetches["final_state_bw"] = self.model.final_state_bw
@@ -264,6 +302,51 @@ class run_epoch(object):
 
 		return x, y, end_reached, seq_lengths
 
+	def calc_cache_ppl(self, vals, vals_two, final_interp_cross_entropy, cache_iters, seq_lengths):
+
+		# placeholder for cross entropy of current sample
+		tmp_interp_ce = 0.0
+
+		cache_probs = vals_two["all_cache_probs"]
+		sum_cache_probs = np.sum(cache_probs)
+
+		# only calculate prob if cache is non-empty (= if cache probs are not nan)
+		if not np.isnan(sum_cache_probs):
+			# to calculate perplexity for cache model
+			cache_iters += self.model.num_steps
+
+			targets_reshaped = vals["target_sample"].reshape([self.model.batch_size*self.model.num_steps])
+			result_interpolation = vals_two["result_interpolation"]
+
+			counter_num_steps = 0
+			counter_batches = 0
+			for i in range(self.model.batch_size*self.model.num_steps):
+
+				if 'per_sentence' in self.model.config and i > seq_lengths[counter_batches] - 1:
+					print('out of sentence')
+					pass
+				else:
+					# negative log prob of target word according to interpolated probs
+					tmp_interp_ce += -(result_interpolation[0][targets_reshaped[i]])
+
+				counter_num_steps += 1
+
+				if counter_num_steps % self.model.num_steps == 0:
+					counter_batches += 1
+
+			# normalize over batches
+			tmp_interp_ce = tmp_interp_ce / self.model.batch_size
+
+			# add to total cross entropy
+			final_interp_cross_entropy += tmp_interp_ce
+
+			# divide by cache_iters
+			interp_ppl = np.exp(final_interp_cross_entropy / (cache_iters))
+
+		else:
+			interp_ppl = None
+
+		return interp_ppl, final_interp_cross_entropy, cache_iters
 
 	def print_samples(self, input_sample, target_sample):
 		'''
@@ -313,9 +396,9 @@ class rescore(run_epoch):
 	Used for re-scoring hypotheses, generating next word(s) or generating debug file.
 	'''
 
-	def __init__(self, session, model, data_object, data_set, eval_op=None, test=False):
+	def __init__(self, session, model, data_object, data_set, eval_op=None, test=False, cache=False):
 
-		super(rescore, self).__init__(session, model, data_object, data_set, eval_op, test)
+		super(rescore, self).__init__(session, model, data_object, data_set, eval_op, test, cache)
 
 		try:
 			os.makedirs(os.path.dirname(self.model.config['result']))
@@ -334,6 +417,14 @@ class rescore(run_epoch):
 			self.print_predictions = False
 			self.num_predictions = 0
 
+		# counter for hypotheses for cache model
+		if 'cache_size' in self.model.config and self.model.use_cache:
+			feed_dict = {self.model.inputs: [[0]], self.model.targets: [[0]]}
+			self.session.run(self.model.initialize_num_hyp_op, feed_dict)
+			self.counter_hypotheses = 0
+			self.prev_id = ''
+			self.first_word = True
+
 	def __call__(self, hypothesis):
 		total_log_prob = 0.0
 		self.print_predictions = False
@@ -349,6 +440,11 @@ class rescore(run_epoch):
 
 		end_reached = False
 		predicted_word = None
+
+		if self.model.use_cache:
+
+			# initialize cache
+			self.init_cache(hypothesis, counter)
 
 		while True:
 
@@ -399,14 +495,21 @@ class rescore(run_epoch):
 			# run the model
 			vals = self.session.run(fetches, feed_dict)
 
-			softmax = vals['softmax']
+			if self.cache:
+				# 2nd run to check whether the variables changed the way we wanted it
+				vals_two = self.session.run(fetches_two, feed_dict)
+				vals = (vals, vals_two)
+				softmax = vals[0]['softmax']
+			else:
+				softmax = vals['softmax']
+
 			state = self.get_final_state(vals)
 
 			current_word, next_word = self.get_words(vals)
 			if 'punct' in self.model.config:
 				next_word, next_word_orig = next_word
 
-			prob_next_word = self.get_prob_next_word(softmax, y)
+			prob_next_word = self.get_prob_next_word(vals, softmax, y, next_word)
 
 			# debugging: print every sample (input + target) that is fed to the model
 			if PRINT_SAMPLES:
@@ -560,6 +663,22 @@ class rescore(run_epoch):
 		if self.eval_op is not None:
 			fetches["eval_op"] = self.eval_op
 
+		if self.model.use_cache:
+
+			fetches["prob_sentence_interp_op"] = self.model.prob_sentence_interp_op
+			fetches["result_interpolation_op"] = self.model.result_interpolation_op
+			fetches["cache_probs_op"] = self.model.cache_probs_op
+			fetches["prob_target_interp_op"] = self.model.prob_target_interp_op
+
+			fetches_two = {
+				"result_interpolation": self.model.result_interpolation,
+				"all_cache_probs": self.model.all_cache_probs,
+				"cache_words": self.model.cache_words,
+				"softmax": self.model.softmax,
+				"prob_sentence_interp": self.model.prob_sentence_interp,
+				"prob_target_interp": self.model.prob_target_interp
+			}
+
 		if 'bidirectional' in self.model.config:
 			fetches["final_state_bw"] = self.model.final_state_bw
 
@@ -638,7 +757,7 @@ class rescore(run_epoch):
 
 		return current_word, next_word
 
-	def get_prob_next_word(self, softmax, y):
+	def get_prob_next_word(self, vals, softmax, y, next_word):
 		'''
 		Retrieve probability that the model assigned to the target word.
 		Arguments:
@@ -648,6 +767,73 @@ class rescore(run_epoch):
 			prob_next_word: log probability of the current target word
 		'''
 
-		prob_next_word = np.log10(softmax[0][y[0][0]])
+		if self.cache:
+			vals_two = vals[1]
+
+			cache_prob_next_word = np.log(vals_two["all_cache_probs"][0][y[0][0]])
+
+			softmax_prob_next_word = np.log(vals[0]["softmax"][0][y[0][0]])
+
+			prob_next_word = vals[1]["result_interpolation"][0][y[0][0]]
+
+			# if the cache is still empty, use softmax prob
+			if math.isnan(prob_next_word):
+				prob_next_word = softmax_prob_next_word
+
+		else:
+
+			prob_next_word = np.log10(softmax[0][y[0][0]])
 
 		return prob_next_word
+
+	def init_cache(self, hypothesis, counter):
+
+		# counts the number of hypotheses already seen for a segment
+		self.counter_hypotheses += 1
+
+		# HACK: feed dummy variables because they will be processed once
+		# by the model, so if they are the same for all hypotheses,
+		# the comparison between the hypotheses is not influenced
+		feed_dict = {self.model.inputs: [[0]], self.model.targets: [[0]]}
+
+		# if we have reached a new segment
+		# IMPORTANT: this assumes that there are EXACTLY num_hypotheses hypotheses per segment
+		if self.counter_hypotheses % self.model.config['num_hypotheses'] == 0:
+
+			self.new_segment_cache(feed_dict)
+
+		# if the number of hypotheses is not the same for each segment,
+		# you should work with hypothesis ids, add 'hyp_with_ids' to the config file
+		# and we will determine that we have reached a new segment once the id changes
+		elif 'hyp_with_ids' in self.model.config and hypothesis[0].split('-')[0] != self.prev_id and self.prev_id != '':
+			self.new_segment_cache(feed_dict)
+
+		# end of sentence/hypothesis (but NOT end of segment) reached:
+		# update memory with prob, cache words and cache states of previous hypothesis
+		elif not self.first_word:
+			self.session.run(self.model.update_prev_hyp_ops, feed_dict)
+
+		self.first_word = False
+
+		if 'hyp_with_ids' in self.model.config:
+			self.prev_id = hypothesis[0].split('-')[0]
+
+		# increment counter
+		self.session.run(self.model.increment_num_hyp_op, feed_dict)
+
+		# run to assign cache of best hypothesis from previous segment to current cache
+		self.session.run(self.model.init_cache_best_prev)
+
+		# initialize logprob for sentence to 0
+		self.session.run(self.model.prob_sentence_interp.initializer)
+
+	def new_segment_cache(self, feed_dict):
+
+		# determine cache of best hypothesis of previous segment
+		self.session.run(self.model.keep_best_prev, feed_dict)
+
+		# re-initialize the counter for the number of hypotheses
+		self.session.run(self.model.initialize_num_hyp_op, feed_dict)
+
+		# reset counter of hypotheses
+		self.counter_hypotheses = 0

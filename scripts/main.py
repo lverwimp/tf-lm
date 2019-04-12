@@ -22,6 +22,32 @@ flags.DEFINE_boolean("test", True,"Test the model or not.")
 flags.DEFINE_string("device", None,"Specify 'cpu' if you want to run on cpu.")
 FLAGS = flags.FLAGS
 
+def get_word_weights(config, data):
+	'''
+	Reads word weights from file.
+	'''
+
+	if 'word_weights' in config:
+		with io.open(config['word_weights'], 'r', encoding=data.encoding) as f:
+			weights = dict([line.split() for line in f])
+
+			word_weights = {}
+			for item, item_id in data.item_to_id.iteritems():
+				try:
+					word_weights[item_id] = float(weights[item])
+				except KeyError:
+					print(u'Word {0} not found in weights file.'.format(item).encode(data.encoding))
+			for item_id, item_weight in word_weights.iteritems():
+				if item_weight == 0.0:
+					print('word {0} has weight 0'.format(data.id_to_item[item_id]))
+			if len(word_weights) != len(data.item_to_id):
+				raise IOError("Number of words found in weight file ({0}) is not equal to the size of the vocabulary {1}.".format(
+						len(word_weights), len(data.item_to_id)))
+	else:
+		word_weights = None
+	return word_weights
+
+
 def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 	'''
 	Reads data from file.
@@ -230,11 +256,18 @@ def read_data(config, eval_config, (TRAIN, VALID, TEST)):
 
 		return config, eval_config, data, train_data, valid_data, test_data, (TRAIN, VALID, TEST)
 
-def create_lm(config, is_training, reuse, test=False):
+def create_lm(config, word_weights, is_training, reuse, test=False):
 	'''
 	Creates language model.
 	'''
-	if 'word_char_concat' in config:
+	if 'cache_size' in config or 'reg_cache' in config:
+		print('Cache model')
+		if test:
+			lm_obj = lm.lm_cache(config, word_weights,	is_training=is_training, reuse=reuse, use_cache=True)
+		else:
+			lm_obj = lm.lm_cache(config, word_weights,  is_training=is_training, reuse=reuse)
+
+	elif 'word_char_concat' in config:
 		print('Model with concatenated word and character embeddings')
 		lm_obj = lm.lm_charwordconcat(config, is_training=is_training, reuse=reuse)
 	elif 'char_ngram' in config:
@@ -312,6 +345,9 @@ def main(_):
 	config, eval_config, data, train_data, valid_data, test_data, (TRAIN, VALID, TEST) = read_data(
 		config, eval_config, (TRAIN, VALID, TEST))
 
+	# read word weight if necessary
+	word_weights = get_word_weights(config, data)
+
 	with tf.Graph().as_default():
 
 		if not 'random' in config:
@@ -327,7 +363,7 @@ def main(_):
 			with tf.name_scope("Train"):
 				with tf.variable_scope("Model", reuse=None, initializer=initializer):
 
-					train_lm = create_lm(config, is_training=True, reuse=False)
+					train_lm = create_lm(config, word_weights, is_training=True, reuse=False)
 					merged = tf.summary.merge_all()
 					train_writer = tf.summary.FileWriter(os.path.join(config['save_path'], 'train'))
 
@@ -340,7 +376,7 @@ def main(_):
 			print('Create validation model...')
 			with tf.name_scope("Valid"):
 				with tf.variable_scope("Model", reuse=reuseOrNot, initializer=initializer):
-					valid_lm = create_lm(config, is_training=False, reuse=reuseOrNot)
+					valid_lm = create_lm(config, word_weights, is_training=False, reuse=reuseOrNot)
 
 			if reuseOrNot == None:
 				reuseOrNot = True
@@ -351,7 +387,7 @@ def main(_):
 			print('Create testing model...')
 			with tf.name_scope("Test"):
 				with tf.variable_scope("Model", reuse=reuseOrNot, initializer=initializer):
-					test_lm = create_lm(eval_config, is_training=False, reuse=reuseOrNot, test=True)
+					test_lm = create_lm(eval_config, word_weights, is_training=False, reuse=reuseOrNot, test=True)
 
 		sv = tf.train.Supervisor(logdir=config['save_path'])
 
@@ -386,6 +422,19 @@ def main(_):
 				print('Start testing...')
 
 				if 'rescore' in config or 'debug2' in config or 'predict_next' in config:
+
+					if 'cache_size' in config:
+
+						tester = run_epoch.rescore(session, test_lm, data, test_data, eval_op=None,
+							valid=False, test=True, cache=True)
+
+						len_test = len(test_data)
+						counter = 0
+						for line in test_data:
+							tester(line)
+							counter += 1
+							if counter % 100 == 0:
+								print(counter)
 
 					# read sentence per sentence from file
 					if 'per_sentence' in config and 'stream_data' in config:
@@ -428,12 +477,24 @@ def main(_):
 						sys.exit(0)
 
 				else:
-					tester = run_epoch.run_epoch(session, test_lm, data, test_data,
-						eval_op=None, test=True)
 
-					test_perplexity = tester()
+					if 'cache_size' in config:
 
-					print('Test Perplexity: {0}'.format(test_perplexity))
+						tester_cache = run_epoch.run_epoch(session, test_lm, data, test_data, eval_op=None,
+							test=True, cache=True)
+
+						test_perplexity, interp_test_ppl = tester_cache()
+
+						print('Test Perplexity: {0}'.format(test_perplexity))
+						print('Interpolated Test Perplexity: {0}'.format(interp_test_ppl))
+
+					else:
+						tester = run_epoch.run_epoch(session, test_lm, data, test_data,
+							eval_op=None, test=True)
+
+						test_perplexity = tester()
+
+						print('Test Perplexity: {0}'.format(test_perplexity))
 
 
 if __name__ == "__main__":
