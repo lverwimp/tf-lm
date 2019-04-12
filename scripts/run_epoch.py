@@ -426,6 +426,7 @@ class rescore(run_epoch):
 			self.first_word = True
 
 	def __call__(self, hypothesis):
+
 		total_log_prob = 0.0
 		self.print_predictions = False
 		self.num_predictions = 0
@@ -434,9 +435,13 @@ class rescore(run_epoch):
 		state = self.get_init_state()
 
 		# counter for the number of words
-		counter = 0
+		if 'hyp_with_ids':
+			# skip hypothesis id
+			counter = 1
+		else:
+			counter = 0
 
-		fetches = self.create_fetches()
+		fetches, fetches_two = self.create_fetches()
 
 		end_reached = False
 		predicted_word = None
@@ -506,8 +511,6 @@ class rescore(run_epoch):
 			state = self.get_final_state(vals)
 
 			current_word, next_word = self.get_words(vals)
-			if 'punct' in self.model.config:
-				next_word, next_word_orig = next_word
 
 			prob_next_word = self.get_prob_next_word(vals, softmax, y, next_word)
 
@@ -678,11 +681,13 @@ class rescore(run_epoch):
 				"prob_sentence_interp": self.model.prob_sentence_interp,
 				"prob_target_interp": self.model.prob_target_interp
 			}
+		else:
+			fetches_two = None
 
 		if 'bidirectional' in self.model.config:
 			fetches["final_state_bw"] = self.model.final_state_bw
 
-		return fetches
+		return fetches, fetches_two
 
 	def create_feed_dict(self, x, y, state):
 		'''
@@ -723,37 +728,23 @@ class rescore(run_epoch):
 			for i in xrange(self.model.num_steps):
 				current_word.append(self.data_object.id_to_item[vals['input_sample'][0][i]])
 
+		elif self.cache:
+			current_word = self.data_object.id_to_item[vals[0]['input_sample'][0][0]]
+
 		else:
 			current_word = self.data_object.id_to_item[vals['input_sample'][0][0]]
 
 		# get next word: list for bidirectional model, otherwise string
-		# use id_to_item even for punctuation model (normally output_id_to_item),
-		# because we only work with input data in words for rescoring
 		if 'bidirectional' in self.model.config:
 			next_word = []
 			for i in xrange(self.model.num_steps):
 				next_word.append(self.data_object.id_to_item[vals['target_sample'][0][i]])
+
+		elif self.cache:
+			next_word = self.data_object.id_to_item[vals[0]['target_sample'][0][0]]
+
 		else:
 			next_word = self.data_object.id_to_item[vals['target_sample'][0][0]]
-
-		# punctuation data: map output word to <nopunct> if not in the list of symbols
-		if 'punct' in self.model.config:
-
-			if 'bidirectional' in self.model.config:
-				next_word_orig = []
-				for i in xrange(self.model.num_steps):
-					next_word_orig.append(next_word[i])
-					if next_word[i] not in self.data_object.punct_symbols:
-						next_word[i] = '<nopunct>'
-
-				next_word = (next_word, next_word_orig)
-
-			else:
-				next_word_orig = next_word
-				if next_word not in self.data_object.punct_symbols:
-					next_word = '<nopunct>'
-
-				next_word = (next_word, next_word_orig)
 
 		return current_word, next_word
 
@@ -802,7 +793,7 @@ class rescore(run_epoch):
 
 			self.new_segment_cache(feed_dict)
 
-		# if the number of hypotheses is not the same for each segment,
+		# if the number of hypotheses is not the same for each segment,sentence.insert(0, self.item_to_id['<bos>']) # CHANGED
 		# you should work with hypothesis ids, add 'hyp_with_ids' to the config file
 		# and we will determine that we have reached a new segment once the id changes
 		elif 'hyp_with_ids' in self.model.config and hypothesis[0].split('-')[0] != self.prev_id and self.prev_id != '':
