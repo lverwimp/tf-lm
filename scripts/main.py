@@ -263,9 +263,9 @@ def create_lm(config, word_weights, is_training, reuse, test=False):
 	if 'cache_size' in config or 'reg_cache' in config:
 		print('Cache model')
 		if test:
-			lm_obj = lm.lm_cache(config, word_weights,	is_training=is_training, reuse=reuse, use_cache=True)
+			lm_obj = lm.lm_cache(config, word_weights, is_training=is_training, reuse=reuse, use_cache=True)
 		else:
-			lm_obj = lm.lm_cache(config, word_weights,  is_training=is_training, reuse=reuse)
+			lm_obj = lm.lm_cache(config, word_weights, is_training=is_training, reuse=reuse)
 
 	elif 'word_char_concat' in config:
 		print('Model with concatenated word and character embeddings')
@@ -426,7 +426,7 @@ def main(_):
 					if 'cache_size' in config:
 
 						tester = run_epoch.rescore(session, test_lm, data, test_data, eval_op=None,
-							valid=False, test=True, cache=True)
+							test=True, cache=True)
 
 						len_test = len(test_data)
 						counter = 0
