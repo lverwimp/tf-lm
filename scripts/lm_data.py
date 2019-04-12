@@ -475,7 +475,11 @@ class wordSentenceData(LMData):
 		for sentence in dataset:
 			#seq_lengths.append(len(sentence)+1) # +1 ONLY <eos>
 			seq_lengths.append(len(sentence)+2) # +2 <bos> + <eos>
-			sentence.insert(0, self.item_to_id['<bos>']) # CHANGED
+
+			if 'hyp_with_ids' in self.config:
+				sentence.insert(1, self.item_to_id['<bos>']) # CHANGED
+			else:
+				sentence.insert(0, self.item_to_id['<bos>']) # CHANGED
 			# end of sentence symbol
 			sentence.append(self.item_to_id['<eos>'])
 			# pad rest of sentence until maximum length
@@ -522,7 +526,15 @@ class wordSentenceData(LMData):
 		data = self.read_sentences(filename)
 		data_ids = []
 		for sentence in data:
-			data_ids.append([self.item_to_id[item] for item in sentence if item in self.item_to_id])
+
+			if 'hyp_with_ids' in self.config:
+				# do not convert hypothesis id to integer
+				hyp = [self.item_to_id[item] if item in self.item_to_id else self.item_to_id[self.unk] for item in sentence[1:]]
+				data_ids.append([sentence[0]] + hyp)
+
+			else:
+				data_ids.append([self.item_to_id[item] if item in self.item_to_id else self.item_to_id[self.unk] for item in sentence])
+
 		return data_ids
 
 	def get_data(self):
@@ -952,15 +964,6 @@ class wordSentenceDataRescore(wordSentenceData):
 	def __init__(self, config, eval_config, TRAIN, VALID, TEST):
 
 		super(wordSentenceDataRescore, self).__init__(config, eval_config, TRAIN, VALID, TEST)
-
-	def file_to_item_ids(self, filename):
-		data = self.read_sentences(filename)
-		data_ids = []
-		for sentence in data:
-			# difference: words not in vocabulary are mapped to the unk symbol
-			data_ids.append([self.item_to_id[item] if item in self.item_to_id \
-				else self.item_to_id[self.unk] for item in sentence])
-		return data_ids
 
 	def get_data(self):
 		all_data = self.read_data()
