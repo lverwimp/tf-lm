@@ -133,5 +133,16 @@ For all 3 options below: if set to 'True', the default test set will be evaluate
 All 3 options should be combined with:
 * **result** (optional, string): results file
 
+# Cache models
+
+* **cache_size** (integer): number of previous words that the cache contains
+* **weights_comb** (string): 'linear' for linear interpolation or 'info_linear' fopr information-weighted interpolation
+* **reg_cache** (optional, True): add this option if you want to use the regular cache (unigram) instead of the neural cache
+* **flatness** (for neural cache only, float): parameter that controls the flatness of the cache distribution (theta in paper [2])
+* **interp** (for linear interpolation only, float): interpolation parameter to combine LM and cache probabilities (lambda in paper [2])
+* **word_weights** (for information-weighted interpolation only, filename): file that contains the information weights of the words in the vocabulary
+* **scale_ww** (for information-weighted interpolation only, float): scaling parameter for the information weights (gamma in the paper [2])
+* **select_cache** (optional, float): add this if you want to use information-weighted selective cache, the value specifices the threshold (phi in the paper [2])
+
 
 
