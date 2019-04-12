@@ -8,9 +8,7 @@ Verwimp, Lyan, Van hamme, Hugo and Patrick Wambacq. 2018. [TF-LM: TensorFlow-bas
 
 The poster presented at LREC 2018 can be found [here](poster_LREC18.pdf).
 
-Last update (12/04/2019): Added functionality to train cache models. For more information, see:
-
-Verwimp, Lyan, Pelemans, Joris, Van hamme, Hugo and Patrick Wambacq. 2018. Information-Weighted Neural Cache Language Models for ASR. In *Proceedings SLT*, Athens, Greece, pp. 756-762.
+Last update (12/04/2019): Added functionality to train cache models. For more information, see [2].
 
 !!! Disclaimer: This project is still under development and not everything has been tested very thoroughly yet.
 
@@ -119,4 +117,6 @@ The config files used for the models are:
 
 If you have any questions, mail to lyan.verwimp [at] esat.kuleuven.be.
 
-[1] Verwimp, L., Pelemans, J., hamme, H. V., and Wambacq, P. (2017). Character-Word LSTM Language Models. *Proceedings of the European Chapter of the Association for Computational Linguistics (EACL)*, pages 417–427.
+[1] Verwimp, L., Pelemans, J., hamme, H. V., and Wambacq, P. (2017). Character-Word LSTM Language Models. *Proceedings of the European Chapter of the Association for Computational Linguistics (EACL)*, Valencia, Spain, pp. 417–427.
+
+[2] Verwimp, L., Pelemans, J., Van hamme, H. and Wambacq, P. 2018. Information-Weighted Neural Cache Language Models for ASR. In *Proceedings SLT*, Athens, Greece, pp. 756-762.
