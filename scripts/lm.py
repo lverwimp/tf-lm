@@ -579,23 +579,24 @@ class lm_cache(lm):
 
 				##### the code below is only used for rescoring (!!! batch size = 1 and num steps = 1) #####
 
-				# get log probability of target word
-				prob_target_interp = tf.gather(tf.reshape(self.result_interpolation,
-					[self.vocab_size]), tf.gather(self.targets, 0))
-				self.prob_target_interp_op = self.prob_target_interp.assign(prob_target_interp).op
+				if 'num_hypotheses' in self.config:
+					# get log probability of target word
+					prob_target_interp = tf.gather(tf.reshape(self.result_interpolation,
+						[self.vocab_size]), tf.gather(self.targets, 0))
+					self.prob_target_interp_op = self.prob_target_interp.assign(prob_target_interp).op
 
-				with tf.control_dependencies([self.prob_target_interp_op]):
+					with tf.control_dependencies([self.prob_target_interp_op]):
 
-					# new logprob for whole sentence: add logprob of current word to logprob of sentence
-					new_prob = tf.add(prob_target_interp, self.prob_sentence_interp)
-					self.prob_sentence_interp_op = self.prob_sentence_interp.assign(new_prob).op
+						# new logprob for whole sentence: add logprob of current word to logprob of sentence
+						new_prob = tf.add(prob_target_interp, self.prob_sentence_interp)
+						self.prob_sentence_interp_op = self.prob_sentence_interp.assign(new_prob).op
 
-				# if end of sentence reached, add cache words, cache states and
-				# prob of sentence to memory of previous hypotheses
-				self.update_prev_hyp_ops = self.update_cache_end_sentence()
+					# if end of sentence reached, add cache words, cache states and
+					# prob of sentence to memory of previous hypotheses
+					self.update_prev_hyp_ops = self.update_cache_end_sentence()
 
-				# keep track of cache of best hypothesis from previous segment
-				self.keep_best_prev = self.get_best_prev_segment()
+					# keep track of cache of best hypothesis from previous segment
+					self.keep_best_prev = self.get_best_prev_segment()
 
 
 	def init_cache_variables(self, word_weights):
@@ -656,35 +657,38 @@ class lm_cache(lm):
 					name="curr_prob_sentence", dtype=tf.float32)
 
 
-		# variables that keep track of probs, cache words and cache states from previous hypotheses
-		with tf.name_scope("memory_previous_hypotheses"):
-			self.cache_words_prev_hyp = tf.Variable(tf.fill([self.config['num_hypotheses'], self.cache_size,
-				self.batch_size], self.vocab_size+1), name="memory_words")
-			self.cache_states_prev_hyp = tf.Variable(tf.zeros([self.config['num_hypotheses'], self.size,
-				self.cache_size, self.batch_size]), name="memory_states", dtype=tf.float32)
+		if 'num_hypotheses' in self.config:
+			# variables that keep track of probs, cache words and cache states from previous hypotheses
+			with tf.name_scope("memory_previous_hypotheses"):
+				self.cache_words_prev_hyp = tf.Variable(tf.fill([self.config['num_hypotheses'], self.cache_size,
+					self.batch_size], self.vocab_size+1), name="memory_words")
+				self.cache_states_prev_hyp = tf.Variable(tf.zeros([self.config['num_hypotheses'], self.size,
+					self.cache_size, self.batch_size]), name="memory_states", dtype=tf.float32)
 
-			self.sentence_probs_prev_hyp = tf.Variable(tf.zeros([self.config['num_hypotheses']]),
+				self.sentence_probs_prev_hyp = tf.Variable(tf.zeros([self.config['num_hypotheses']]),
 							name="memory_probs")
 
-		with tf.name_scope("cache_best_prev"):
-			# variables that will keep track with what the cache needs to be initialized
-			self.cache_words_best_prev = tf.Variable(tf.fill([self.cache_size, self.batch_size],
-				self.vocab_size+1), name="cache_words_best_prev")
-			self.cache_states_best_prev = tf.Variable(tf.zeros([self.size, self.cache_size,
-				self.batch_size]), name="cache_states_best_prev", dtype=tf.float32)
+			with tf.name_scope("cache_best_prev"):
+				# variables that will keep track with what the cache needs to be initialized
+				self.cache_words_best_prev = tf.Variable(tf.fill([self.cache_size, self.batch_size],
+					self.vocab_size+1), name="cache_words_best_prev")
+				self.cache_states_best_prev = tf.Variable(tf.zeros([self.size, self.cache_size,
+					self.batch_size]), name="cache_states_best_prev", dtype=tf.float32)
 
-			# initialize cache with cache of best previous hypothesis
-			init_words_best_prev = self.cache_words.assign(self.cache_words_best_prev).op
-			init_states_best_prev = self.cache_states.assign(self.cache_states_best_prev).op
+				# initialize cache with cache of best previous hypothesis
+				init_words_best_prev = self.cache_words.assign(self.cache_words_best_prev).op
+				init_states_best_prev = self.cache_states.assign(self.cache_states_best_prev).op
 
-			self.init_cache_best_prev = tf.group(init_words_best_prev, init_states_best_prev, name="init_cache_best_prev")
+				self.init_cache_best_prev = tf.group(init_words_best_prev, init_states_best_prev, name="init_cache_best_prev")
 
-			self.cache_words.read_value()
-			self.cache_states.read_value()
+				self.cache_words.read_value()
+				self.cache_states.read_value()
 
-
-		to_initialize = [self.cache_states, self.cache_words, self.cache_words_prev_hyp, self.cache_states_prev_hyp,
-			self.sentence_probs_prev_hyp, self.cache_words_best_prev, self.cache_states_best_prev]
+		if 'num_hypotheses' in self.config:
+			to_initialize = [self.cache_states, self.cache_words, self.cache_words_prev_hyp, self.cache_states_prev_hyp,
+				self.sentence_probs_prev_hyp, self.cache_words_best_prev, self.cache_states_best_prev]
+		else:
+			to_initialize = [self.cache_states, self.cache_words]
 
 		# initializes cache to empty cache - used at the beginning to avoid
 		# using data stored in cache from previous session
