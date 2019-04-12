@@ -649,7 +649,6 @@ class lm_cache(lm):
 			self.result_interpolation = tf.Variable(tf.zeros([self.batch_size*self.num_steps,
 					self.vocab_size]), name="interpolated_probs", dtype=tf.float32)
 
-			#if 'new_cache' in self.config:
 			self.prob_target_interp = tf.Variable(tf.zeros([1]),
 					name="curr_prob_target", dtype=tf.float32)
 
