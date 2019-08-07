@@ -20,7 +20,7 @@ class run_epoch(object):
 		self.data_set = data_set
 		self.eval_op = eval_op
 		self.test = test
-		self.cache = cache
+		self.use_cache = cache
 
 		if 'cache_size' in self.model.config and self.model.use_cache:
 			# initialize cache to empty cache
@@ -134,7 +134,7 @@ class run_epoch(object):
 		Initialize to state of previous time step.
 		'''
 
-		if self.cache and 'rescore' in self.model.config:
+		if self.use_cache and 'rescore' in self.model.config:
 			state = vals[0]["final_state"]
 		else:
 			state = vals["final_state"]
@@ -500,7 +500,7 @@ class rescore(run_epoch):
 			# run the model
 			vals = self.session.run(fetches, feed_dict)
 
-			if self.cache:
+			if self.use_cache:
 				# 2nd run to check whether the variables changed the way we wanted it
 				vals_two = self.session.run(fetches_two, feed_dict)
 				vals = (vals, vals_two)
@@ -728,7 +728,7 @@ class rescore(run_epoch):
 			for i in xrange(self.model.num_steps):
 				current_word.append(self.data_object.id_to_item[vals['input_sample'][0][i]])
 
-		elif self.cache:
+		elif self.use_cache:
 			current_word = self.data_object.id_to_item[vals[0]['input_sample'][0][0]]
 
 		else:
@@ -740,7 +740,7 @@ class rescore(run_epoch):
 			for i in xrange(self.model.num_steps):
 				next_word.append(self.data_object.id_to_item[vals['target_sample'][0][i]])
 
-		elif self.cache:
+		elif self.use_cache:
 			next_word = self.data_object.id_to_item[vals[0]['target_sample'][0][0]]
 
 		else:
@@ -758,7 +758,7 @@ class rescore(run_epoch):
 			prob_next_word: log probability of the current target word
 		'''
 
-		if self.cache:
+		if self.use_cache:
 			vals_two = vals[1]
 
 			cache_prob_next_word = np.log(vals_two["all_cache_probs"][0][y[0][0]])
