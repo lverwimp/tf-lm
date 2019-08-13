@@ -46,6 +46,7 @@ class lm(object):
 		self.num_steps = config['num_steps']
 		self.size = config['size']
 		self.vocab_size = config['vocab_size']
+		self.use_cache = False
 		self.reuse = reuse
 
 		if not 'output_vocab_size' in config:
